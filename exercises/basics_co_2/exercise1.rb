@@ -16,4 +16,16 @@ class Cat
   end
 end
 
+kitty = Cat.new
 Cat.generic_greeting
+
+# further exploration:
+
+# What happens if you run kitty.class.generic_greeting? Can you explain this
+# result?
+
+kitty.class.generic_greeting
+
+# It invokes the method as if it was called like Cat.generic_greeting.
+# This is because the #class method returns the class reference, thus is the
+# the same as typing it out.

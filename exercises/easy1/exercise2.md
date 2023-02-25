@@ -47,3 +47,32 @@ class Pet
   end
 end
 ```
+
+---
+Further Exploration
+
+What would happen in this case?
+
+```ruby
+name = 42
+fluffy = Pet.new(name)
+name += 1
+puts fluffy.name
+puts fluffy
+puts fluffy.name
+puts name
+```
+
+This code "works" because of that mysterious to_s call in Pet#initialize. However, that doesn't explain why this code produces the result it does. Can you?
+
+---
+
+In this case it would output:
+```
+42
+My name is 42.
+42
+43
+```
+
+This is because the `to_s` method returns a new string on objects of classes other than `String`. That explains the first 42 output. The reason it doesn't change for the "My name is 42." part is because the `upcase` method only effects alphabetical characters, thus there is no change in value for `@name`. Finally, the final output of `43` is because the integer 42 that was referenced by the local variable `name` is not effected by the separate string object created by `to_s` and vice versa.

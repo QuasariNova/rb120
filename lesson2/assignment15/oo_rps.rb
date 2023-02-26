@@ -109,3 +109,26 @@ class RPSGame
 end
 
 RPSGame.new.play
+
+# Compare this design with the one in the previous assignment:
+
+# is this design, with Human and Computer sub-classes, better? Why, or why not?
+
+# ---
+# I believe it is better. Because it is much easier to read. You know what each
+# object stands for and thus can easily tell whats going on when each method is
+# invoked from it.
+# ---
+
+# what is the primary improvement of this new design?
+
+# ---
+# You no longer have 2 different behaviors possible from the same method call.
+# This makes it far easier to tell exactly why the code does what it does.
+# ---
+
+# what is the primary drawback of this new design?
+
+# ---
+# You now have 3 Classes to pay attention to instead of 1. There is more
+# complexity with the objects, but I still believe this is more readable.

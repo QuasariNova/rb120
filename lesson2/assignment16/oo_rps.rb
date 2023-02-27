@@ -25,7 +25,7 @@ class Move
 end
 
 class Player
-  attr_reader :move, :name
+  attr_accessor :move, :name
 
   def initialize
     set_name

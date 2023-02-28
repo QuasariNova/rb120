@@ -120,15 +120,28 @@ class Move
 end
 
 class Player
-  attr_reader :move, :name
+  attr_reader :move, :name, :score
 
   def initialize
     set_name
+    reset_score
+  end
+
+  def reset_score
+    self.score = 0
+  end
+
+  def reset_choice
+    self.move = nil
+  end
+
+  def inc_score(value)
+    self.score += value
   end
 
   private
 
-  attr_writer :move, :name
+  attr_writer :move, :name, :score
 end
 
 class Human < Player
@@ -283,40 +296,39 @@ class C3P0 < Computer
   end
 end
 
-# Game Orchestration Engine
 class RPSGame
   AI = [Computer, HAL, Warbot, BMO, WallE, Femputer, DeepBlue, C3P0].freeze
 
-  def initialize
-    @human = Human.new
-    @computer = AI.sample.new
+  attr_reader :winner
+
+  def initialize(human, computer)
+    @human = human
+    @computer = computer
+    human.reset_choice
+    computer.reset_choice
   end
 
   def play
-    display_welcome_message
+    human.choose
+    computer.choose
 
-    loop do
-      human.choose
-      computer.choose
-      display_moves
-      display_winner
-      break unless play_again?
-    end
+    display_moves
+    set_winner
+    display_winner
+  end
 
-    display_goodbye_message
+  def self.display_welcome_message
+    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
+  end
+
+  def self.display_goodbye_message
+    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye!"
   end
 
   private
 
   attr_accessor :human, :computer
-
-  def display_welcome_message
-    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
-  end
-
-  def display_goodbye_message
-    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye!"
-  end
+  attr_writer :winner
 
   def display_moves
     puts "#{human.name} chose #{human.move}."
@@ -324,21 +336,95 @@ class RPSGame
   end
 
   def display_winner
-    if human.move > computer.move
-      puts "#{human.name} won!"
-    elsif human.move < computer.move
-      puts "#{computer.name} won!"
+    if winner.size == 1
+      puts "#{winner[0].name} won!"
     else
-      puts "It's a tie"
+      puts "It's a tie!"
     end
   end
 
+  def set_winner
+    if human.move > computer.move
+      self.winner = [human]
+    elsif human.move < computer.move
+      self.winner = [computer]
+    else
+      self.winner = [human, computer]
+    end
+  end
+end
+
+class Match
+  def initialize(game, target_score = 10)
+    self.game = game
+    self.target_score = target_score
+  end
+
+  def play
+    game.display_welcome_message
+    self.human = Human.new
+
+    loop do
+      human.reset_score
+      self.computer = game::AI.sample.new
+
+      display_challenger
+
+      until winner?
+        play_round
+      end
+
+      display_winner
+      break unless play_again?
+    end
+
+    game.display_goodbye_message
+  end
+
+  private
+
+  attr_accessor :game, :target_score, :human, :computer
+
+  def play_round
+    round = game.new human, computer
+
+    display_information
+    round.play
+
+    give_score round.winner
+  end
+
+  def give_score(winners)
+    winners.each do |winner|
+      value = 1 / winners.size.to_f
+      winner.inc_score value
+    end
+  end
+
+  def display_challenger
+    puts "#{computer.name} has challenged you to a match!"
+  end
+
+  def display_information
+
+  end
+
+  def display_winner
+
+  end
+
+  def winner?
+    human.score >= target_score || computer.score >= target_score
+  end
+
   def play_again?
-    prompt = Prompt.new %w(yes no), "Would you like to play again? (Yes or No)"
+    prompt = Prompt.new %w(yes no), 'Would you like to play another match? ' \
+      '(Yes or No)'
+
     prompt.ask
 
     prompt.result == 'yes'
   end
 end
 
-RPSGame.new.play
+Match.new(RPSGame).play

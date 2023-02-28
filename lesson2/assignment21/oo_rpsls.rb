@@ -1,9 +1,9 @@
 class Move
-  VALUES = ['rock', 'paper', 'scissors', 'spock', 'lizard']
+  VALUES = %w(rock paper scissors spock lizard).freeze
   include Comparable
 
   def initialize(value)
-    @value = VALUES.index(value)
+    @value = VALUES.index value
   end
 
   # Choice| Other | Dif | % 3 | % 5 | | Choice| Other | Dif | % 3 | % 5 |
@@ -47,14 +47,32 @@ class Move
 end
 
 class Player
-  attr_accessor :move, :name
+  attr_reader :move, :name
 
   def initialize
     set_name
   end
+
+  private
+
+  attr_writer :move, :name
 end
 
 class Human < Player
+  def choose
+    choice = nil
+    loop do
+      puts "Please choose Rock, Paper, Scissors, Lizard, or Spock:"
+      choice = gets.chomp.downcase
+      break if Move::VALUES.include? choice
+      puts "Sorry, invalid choice."
+    end
+
+    self.move = Move.new choice
+  end
+
+  private
+
   def set_name
     n = ""
 
@@ -67,37 +85,145 @@ class Human < Player
 
     self.name = n
   end
+end
+
+# Computer is your basic cpu. It just chooses a move at random
+class Computer < Player
+  def initialize
+    super
+    self.pref = Move::VALUES
+  end
 
   def choose
-    choice = nil
-    loop do
-      puts "Please choose Rock, Paper, Scissors, Lizard, or Spock:"
-      choice = gets.chomp.downcase
-      break if Move::VALUES.include? choice
-      puts "Sorry, invalid choice."
-    end
+    self.move = Move.new pref.sample
+  end
 
-    self.move = Move.new(choice)
+  private
+
+  def set_name
+    self.name = 'Computer'
+  end
+
+  attr_accessor :pref
+end
+
+# Hal chooses each choice in sequence.
+class HAL < Computer
+  def initialize
+    super
+    self.idx = 0
+  end
+
+  def choose
+    self.move = Move.new pref[idx % pref.size]
+    change_index
+  end
+
+  private
+
+  def set_name
+    self.name = 'HAL 9000'
+  end
+
+  def change_index
+    self.idx += 1
+  end
+
+  attr_accessor :idx
+end
+
+# Femputer chooses each choice in reverse sequence.
+class Femputer < HAL
+  private
+
+  def set_name
+    self.name = 'Femputer'
+  end
+
+  def change_index
+    self.idx -= 1
   end
 end
 
-class Computer < Player
-  def set_name
-    self.name = ['R2D2', 'Hal', 'Chappie', 'Sonny', 'Number 5'].sample
+# DeepBlue has a sequence that is a bit tricky to see.
+class DeepBlue < HAL
+  def initialize
+    super
+    self.pref = %w(spock paper lizard scissors rock paper scissors spock lizard
+                   rock)
   end
 
+  private
+
+  def set_name
+    self.name = 'Deep Blue'
+  end
+end
+
+# Warbot only has weapons at his disposal. If only he had hands.
+class Warbot < Computer
+  def initialize
+    super
+    self.pref = %w(rock rock rock rock rock scissors scissors scissors scissors)
+  end
+
+  private
+
+  def set_name
+    self.name = 'Warbot CPA'
+  end
+end
+
+# BMO doesn't like weapons.
+class BMO < Computer
+  def initialize
+    super
+    self.pref = %w(paper paper paper paper spock spock spock lizard lizard)
+  end
+
+  private
+
+  def set_name
+    self.name = 'BMO'
+  end
+end
+
+# WallE found a rock.
+class WallE < Computer
   def choose
-    self.move = Move.new(Move::VALUES.sample)
+    self.move = Move.new 'rock'
+  end
+
+  private
+
+  def set_name
+    self.name = 'Wall-E'
+  end
+end
+
+# C3PO does not like rocks as they can hurt him.
+class C3P0 < Computer
+  def initialize
+    super
+    self.pref = %w(paper paper paper scissors scissors spock spock spock lizard)
+  end
+
+  private
+
+  def set_name
+    self.name = 'C3P0'
   end
 end
 
 # Game Orchestration Engine
 class RPSGame
+  AI = [Computer, HAL, Warbot, BMO, WallE, Femputer, DeepBlue, C3P0].freeze
+
   attr_accessor :human, :computer
 
   def initialize
     @human = Human.new
-    @computer = Computer.new
+    @computer = AI.sample.new
   end
 
   def display_welcome_message

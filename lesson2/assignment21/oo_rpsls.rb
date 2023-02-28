@@ -12,7 +12,7 @@ class Prompt
 
     loop do
       puts prompt_message
-      print_prompt
+      Prompt.print_prompt
       answer = possible_choices gets.chomp.downcase
 
       answer = verify_choice answer
@@ -22,6 +22,10 @@ class Prompt
     end
 
     self.result = answer
+  end
+
+  def self.print_prompt
+    print "=> "
   end
 
   private
@@ -40,7 +44,7 @@ class Prompt
     print_options options
 
     loop do
-      print_prompt
+      Prompt.print_prompt
 
       index = gets.to_i - 1
       return options[index] if index >= 0 # if none will return nil
@@ -56,10 +60,6 @@ class Prompt
     options.each_with_index do |option, index|
       puts "#{index + 1} #{option.capitalize}"
     end
-  end
-
-  def print_prompt
-    print "=> "
   end
 
   def choices_to_string
@@ -145,6 +145,7 @@ class Human < Player
 
     loop do
       puts "What's your name?"
+      Prompt.print_prompt
       n = gets.chomp
       break unless n.empty?
       puts "Sorry, must enter a value."

@@ -1,13 +1,35 @@
 class Move
-  VALUES = ['rock', 'paper', 'scissors']
+  VALUES = ['rock', 'paper', 'scissors', 'spock', 'lizard']
   include Comparable
 
   def initialize(value)
     @value = VALUES.index(value)
   end
 
-  # I differed from video here. This was my solution
-  # for comparison in the RB101 project and it still works here.
+  # Choice| Other | Dif | % 3 | % 5 | | Choice| Other | Dif | % 3 | % 5 |
+  # rock  | rock  |  0  |  0  |  0t |
+  # rock  | paper*| -1  |  2  |  4l | |*paper | rock  |  1  |  1  |  1w |
+  # rock* | sciss | -2  |  1  |  3w | | sciss |*rock  |  2  |  2  |  2l |
+  # rock  | spock*| -3  | n\a |  2l | |*spock | rock  |  3  | n/a |  3w |
+  # rock* | lizar | -4  | n\a |  1w | | lizar |*rock  |  4  | n/a |  4l |
+  # paper | paper |  0  |  0  |  0t |
+  # paper | sciss*| -1  |  2  |  4l | |*sciss | paper |  1  |  1  |  1w |
+  # paper*| spock | -2  | n\a |  3w | | spock |*paper |  2  | n\a |  2l |
+  # paper | lizar*| -3  | n\a |  2l | |*lizar | paper |  3  | n\a |  3w |
+  # sciss | sciss |  0  | n\a |  0t |
+  # sciss | spock*| -1  | n\a |  4l | |*spock | sciss |  1  | n\a |  1w |
+  # sciss*| lizar | -2  | n\a |  3w | | lizar | sciss |  2  | n\a |  2l |
+  # spock | spock |  0  | n\a |  0t |
+  # spock | lizar*| -1  | n\a |  4l | |*lizar | spock |  1  | n\a |  1w |
+  # lizar | lizar |  0  | n\a |  0w |
+  # The <=> method subtracts the objects move index by others move index. It
+  # then takes that value modulo the number of choices. 0 is tie, odd is win,
+  # and even is loss. If you look at the chart above, this is true of both
+  # rock paper scissors and rock paper scissors lizard spock. It could also
+  # be true of some other odd > 3 choices, though as we get higher, not all
+  # versions of this would be true. If spock was a different option that say
+  # beat paper and rock, while lizard beat scissors and spock, this wouldn't be
+  # a possible way to check.
   def <=>(other)
     value_dif = value - other.value
     return 0 if value_dif.zero?
@@ -16,7 +38,7 @@ class Move
   end
 
   def to_s
-    VALUES[value]
+    VALUES[value].capitalize
   end
 
   protected
@@ -49,8 +71,8 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose rock, paper, or scissors:"
-      choice = gets.chomp
+      puts "Please choose Rock, Paper, Scissors, Lizard, or Spock:"
+      choice = gets.chomp.downcase
       break if Move::VALUES.include? choice
       puts "Sorry, invalid choice."
     end
@@ -79,11 +101,11 @@ class RPSGame
   end
 
   def display_welcome_message
-    puts "Welcome to Rock, Paper, Scissors!"
+    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
   end
 
   def display_goodbye_message
-    puts "Thanks for playing Rock, Paper, Scissors. Good bye!"
+    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye!"
   end
 
   def display_moves

@@ -1,10 +1,13 @@
+require 'io/console'
+SLEEP_TIME = 3
+
 class Prompt
   attr_reader :result
 
   def initialize(chos, prmpt = nil, err = nil)
-    self.choices = chos.map &:downcase
-    self.error = err ? err : "Sorry, invalid choice."
-    self.prompt_message = prmpt ? prmpt : choices_to_string
+    self.choices = chos.map(&:downcase)
+    self.error = err || "Sorry, invalid choice."
+    self.prompt_message = prmpt || choices_to_string
   end
 
   def ask
@@ -54,7 +57,7 @@ class Prompt
   end
 
   def print_options(options)
-    options = options + ['None of the above']
+    options += ['None of the above']
     puts "Did you mean? (1-#{options.size})"
 
     options.each_with_index do |option, index|
@@ -64,13 +67,39 @@ class Prompt
 
   def choices_to_string
     case choices.size
-    when 1 then choices[0] + ':'
+    when 1 then "#{choices[0]}:"
     when 2 then "#{choices[0]} or #{choices[1]}:"
     else "#{choices[0...-1].join(', ')}, or #{choices[-1]}:"
     end
   end
 end
 
+module Banner
+  TEXT_WIDTH = 70
+
+  def self.make(str)
+    "===| #{str.center(TEXT_WIDTH)} |==="
+  end
+end
+
+# I did not implement the moves are a subclass feature of Move. The main
+# reason I did not is because I feel that they aren't a good thing to subclass
+# due to two reasons. First, they don't have any behaviors that are different.
+# Secondly, they only differ in state, they don't require different instance
+# variables or require them to be handled differently. They seem to be best
+# suited to being a single object together.
+#
+# If I did add the feature, I'd be gaining a bigger headache in having to
+# deal with 5 diffent classes to choose a move and handle string->which class
+# needs instantiated. I would gain nothing from this.
+#
+# It is simple enough to do, just have the individual subclasses set their
+# @value instance variable to their option in their initialize and remove the
+# initialize method from the Move superclass. Then, I would have a lookup hash
+# that uses the move as a key and an instance of each object as a key. When
+# the player choses, it would use the hash to determine which object is chosen.
+# It feels like a long way of just doing it in the constructor of the Move
+# object.
 class Move
   VALUES = %w(rock paper scissors spock lizard).freeze
   include Comparable
@@ -100,9 +129,14 @@ class Move
   # and even is loss. If you look at the chart above, this is true of both
   # rock paper scissors and rock paper scissors lizard spock. It could also
   # be true of some other odd > 3 choices, though as we get higher, not all
-  # versions of this would be true. If spock was a different option that say
-  # beat paper and rock, while lizard beat scissors and spock, this wouldn't be
-  # a possible way to check.
+  # versions of this would be true.
+  #
+  # If spock was a different option that say beat paper and rock, while lizard
+  # beat scissors and spock, this wouldn't be a possible way to check.
+  #
+  # If we were to add say Wizard which had an index of 5 that beat lizard,
+  # scissors and rock and Rogue at 6, which beat Spock, Paper, and Wizard, with
+  # the rest vice versa, it would still work with this algo.
   def <=>(other)
     value_dif = value - other.value
     return 0 if value_dif.zero?
@@ -128,7 +162,7 @@ class Player
   end
 
   def reset_score
-    self.score = 0
+    self.score = 0.0
   end
 
   def reset_choice
@@ -318,11 +352,15 @@ class RPSGame
   end
 
   def self.display_welcome_message
-    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
+    $stdout.clear_screen
+    puts Banner.make('Welcome to Rock, Paper, Scissors, Lizard,'\
+      'Spock!'), nil
   end
 
   def self.display_goodbye_message
-    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye!"
+    $stdout.clear_screen
+    puts Banner.make('Thanks for playing Rock, Paper, Scissors, '\
+      'Lizard, Spock. Good bye!'), nil
   end
 
   private
@@ -331,8 +369,10 @@ class RPSGame
   attr_writer :winner
 
   def display_moves
+    $stdout.clear_screen
+    puts Banner.make("Rock, Paper, Scissors, Lizard, Spock!"), nil
     puts "#{human.name} chose #{human.move}."
-    puts "#{computer.name} chose #{computer.move}"
+    puts "#{computer.name} chose #{computer.move}", nil
   end
 
   def display_winner
@@ -344,37 +384,37 @@ class RPSGame
   end
 
   def set_winner
-    if human.move > computer.move
-      self.winner = [human]
-    elsif human.move < computer.move
-      self.winner = [computer]
-    else
-      self.winner = [human, computer]
-    end
+    self.winner = if human.move > computer.move
+                    [human]
+                  elsif human.move < computer.move
+                    [computer]
+                  else
+                    [human, computer]
+                  end
   end
 end
 
 class Match
-  def initialize(game, target_score = 10)
+  def initialize(game, target_score = 10.0)
     self.game = game
     self.target_score = target_score
+    self.round_number = 1
+
+    game.display_welcome_message
+    self.human = Human.new
   end
 
   def play
-    game.display_welcome_message
-    self.human = Human.new
-
     loop do
       human.reset_score
       self.computer = game::AI.sample.new
 
       display_challenger
 
-      until winner?
-        play_round
-      end
+      play_round until winner?
 
       display_winner
+
       break unless play_again?
     end
 
@@ -383,7 +423,7 @@ class Match
 
   private
 
-  attr_accessor :game, :target_score, :human, :computer
+  attr_accessor :game, :target_score, :human, :computer, :round_number
 
   def play_round
     round = game.new human, computer
@@ -392,25 +432,50 @@ class Match
     round.play
 
     give_score round.winner
+    self.round_number += 1
+    sleep SLEEP_TIME
   end
 
   def give_score(winners)
     winners.each do |winner|
+      previous = winner.score
+
       value = 1 / winners.size.to_f
       winner.inc_score value
+
+      puts "#{winner.name}: #{previous} --> #{winner.score}. " \
+        "#{target_score} needed to win."
     end
   end
 
   def display_challenger
-    puts "#{computer.name} has challenged you to a match!"
+    $stdout.clear_screen
+    puts Banner.make("#{human.name}! #{computer.name} has " \
+      "challenged you to a match!"), nil
+    puts "Get prepared."
+    sleep SLEEP_TIME
   end
 
   def display_information
-
+    $stdout.clear_screen
+    puts Banner.make("Round #{round_number}; " \
+      "#{human.name}: #{human.score} | #{computer.name}: #{computer.score}" \
+      " | Win = #{target_score}"), nil
   end
 
   def display_winner
+    $stdout.clear_screen
+    puts Banner.make('We have a winner!'), nil
 
+    target = target_score
+    if human.score == computer.score
+      puts "Both reached #{target} points. Its a tie.", nil
+    else
+      name = human.score > 10 ? human.name : computer.name
+      puts "#{name} was the first to reach #{target} points. #{name} won!", nil
+    end
+
+    sleep SLEEP_TIME
   end
 
   def winner?

@@ -1,3 +1,76 @@
+class Prompt
+  attr_reader :result
+
+  def initialize(chos, prmpt = nil, err = nil)
+    self.choices = chos.map &:downcase
+    self.error = err ? err : "Sorry, invalid choice."
+    self.prompt_message = prmpt ? prmpt : choices_to_string
+  end
+
+  def ask
+    answer = ''
+
+    loop do
+      puts prompt_message
+      print_prompt
+      answer = possible_choices gets.chomp.downcase
+
+      answer = verify_choice answer
+      break if answer
+
+      puts error
+    end
+
+    self.result = answer
+  end
+
+  private
+
+  attr_accessor :choices, :error, :prompt_message
+  attr_writer :result
+
+  def possible_choices(input)
+    choices.select { |choice| choice.start_with? input }
+  end
+
+  def verify_choice(options)
+    return nil if options.empty?
+    return options[0] if options.one?
+
+    print_options options
+
+    loop do
+      print_prompt
+
+      index = gets.to_i - 1
+      return options[index] if index >= 0 # if none will return nil
+
+      puts "Please enter a number from 1-#{options.size}"
+    end
+  end
+
+  def print_options(options)
+    options = options + ['None of the above']
+    puts "Did you mean? (1-#{options.size})"
+
+    options.each_with_index do |option, index|
+      puts "#{index + 1} #{option.capitalize}"
+    end
+  end
+
+  def print_prompt
+    print "=> "
+  end
+
+  def choices_to_string
+    case choices.size
+    when 1 then choices[0] + ':'
+    when 2 then "#{choices[0]} or #{choices[1]}:"
+    else "#{choices[0...-1].join(', ')}, or #{choices[-1]}:"
+    end
+  end
+end
+
 class Move
   VALUES = %w(rock paper scissors spock lizard).freeze
   include Comparable
@@ -7,21 +80,21 @@ class Move
   end
 
   # Choice| Other | Dif | % 3 | % 5 | | Choice| Other | Dif | % 3 | % 5 |
-  # rock  | rock  |  0  |  0  |  0t |
-  # rock  | paper*| -1  |  2  |  4l | |*paper | rock  |  1  |  1  |  1w |
-  # rock* | sciss | -2  |  1  |  3w | | sciss |*rock  |  2  |  2  |  2l |
-  # rock  | spock*| -3  | n\a |  2l | |*spock | rock  |  3  | n/a |  3w |
-  # rock* | lizar | -4  | n\a |  1w | | lizar |*rock  |  4  | n/a |  4l |
-  # paper | paper |  0  |  0  |  0t |
-  # paper | sciss*| -1  |  2  |  4l | |*sciss | paper |  1  |  1  |  1w |
-  # paper*| spock | -2  | n\a |  3w | | spock |*paper |  2  | n\a |  2l |
-  # paper | lizar*| -3  | n\a |  2l | |*lizar | paper |  3  | n\a |  3w |
-  # sciss | sciss |  0  | n\a |  0t |
-  # sciss | spock*| -1  | n\a |  4l | |*spock | sciss |  1  | n\a |  1w |
-  # sciss*| lizar | -2  | n\a |  3w | | lizar | sciss |  2  | n\a |  2l |
-  # spock | spock |  0  | n\a |  0t |
-  # spock | lizar*| -1  | n\a |  4l | |*lizar | spock |  1  | n\a |  1w |
-  # lizar | lizar |  0  | n\a |  0w |
+  # rock  | rock  |  0  | 0 t | 0 t |
+  # rock  | paper*| -1  | 2 l | 4 l | |*paper | rock  |  1  | 1 w | 1 w |
+  # rock* | sciss | -2  | 1 w | 3 w | | sciss |*rock  |  2  | 2 l | 2 l |
+  # rock  | spock*| -3  | n\a | 2 l | |*spock | rock  |  3  | n/a | 3 w |
+  # rock* | lizar | -4  | n\a | 1 w | | lizar |*rock  |  4  | n/a | 4 l |
+  # paper | paper |  0  | 0 t | 0 t |
+  # paper | sciss*| -1  | 2 l | 4 l | |*sciss | paper |  1  | 1 w | 1 w |
+  # paper*| spock | -2  | n\a | 3 w | | spock |*paper |  2  | n\a | 2 l |
+  # paper | lizar*| -3  | n\a | 2 l | |*lizar | paper |  3  | n\a | 3 w |
+  # sciss | sciss |  0  | n\a | 0 t |
+  # sciss | spock*| -1  | n\a | 4 l | |*spock | sciss |  1  | n\a | 1 w |
+  # sciss*| lizar | -2  | n\a | 3 w | | lizar | sciss |  2  | n\a | 2 l |
+  # spock | spock |  0  | n\a | 0 t |
+  # spock | lizar*| -1  | n\a | 4 l | |*lizar | spock |  1  | n\a | 1 w |
+  # lizar | lizar |  0  | n\a | 0 t |
   # The <=> method subtracts the objects move index by others move index. It
   # then takes that value modulo the number of choices. 0 is tie, odd is win,
   # and even is loss. If you look at the chart above, this is true of both
@@ -60,15 +133,9 @@ end
 
 class Human < Player
   def choose
-    choice = nil
-    loop do
-      puts "Please choose Rock, Paper, Scissors, Lizard, or Spock:"
-      choice = gets.chomp.downcase
-      break if Move::VALUES.include? choice
-      puts "Sorry, invalid choice."
-    end
-
-    self.move = Move.new choice
+    prompt = Prompt.new Move::VALUES, "Rock, Paper, Scissors, Lizard, or Spock:"
+    prompt.ask
+    self.move = Move.new prompt.result
   end
 
   private
@@ -219,12 +286,28 @@ end
 class RPSGame
   AI = [Computer, HAL, Warbot, BMO, WallE, Femputer, DeepBlue, C3P0].freeze
 
-  attr_accessor :human, :computer
-
   def initialize
     @human = Human.new
     @computer = AI.sample.new
   end
+
+  def play
+    display_welcome_message
+
+    loop do
+      human.choose
+      computer.choose
+      display_moves
+      display_winner
+      break unless play_again?
+    end
+
+    display_goodbye_message
+  end
+
+  private
+
+  attr_accessor :human, :computer
 
   def display_welcome_message
     puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
@@ -250,30 +333,10 @@ class RPSGame
   end
 
   def play_again?
-    answer = nil
+    prompt = Prompt.new %w(yes no), "Would you like to play again? (Yes or No)"
+    prompt.ask
 
-    loop do
-      puts "Would you like to play again? (y/n)"
-      answer = gets.chomp
-      break if ['y', 'n'].include? answer.downcase
-      puts "Sorry, must be y or n"
-    end
-
-    answer.downcase == 'y'
-  end
-
-  def play
-    display_welcome_message
-
-    loop do
-      human.choose
-      computer.choose
-      display_moves
-      display_winner
-      break unless play_again?
-    end
-
-    display_goodbye_message
+    prompt.result == 'yes'
   end
 end
 

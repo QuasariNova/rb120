@@ -504,12 +504,12 @@ class Match
     self.game = game
     self.target_score = target_score
     self.round_number = 1
-
-    game.display_welcome_message
-    self.human = game::HUMAN.new
   end
 
   def play
+    game.display_welcome_message
+    self.human = game::HUMAN.new
+
     loop do
       prepare_match
 

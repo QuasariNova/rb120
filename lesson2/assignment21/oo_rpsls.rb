@@ -1,5 +1,4 @@
 require 'io/console'
-SLEEP_TIME = 3
 
 class Prompt
   attr_reader :result
@@ -79,6 +78,10 @@ module Banner
 
   def self.make(str)
     "===| #{str.center(TEXT_WIDTH)} |==="
+  end
+
+  def self.print(str)
+    puts make(str), nil
   end
 end
 
@@ -353,14 +356,13 @@ class RPSGame
 
   def self.display_welcome_message
     $stdout.clear_screen
-    puts Banner.make('Welcome to Rock, Paper, Scissors, Lizard,'\
-      'Spock!'), nil
+    Banner.print 'Welcome to Rock, Paper, Scissors, Lizard, Spock!'
   end
 
   def self.display_goodbye_message
     $stdout.clear_screen
-    puts Banner.make('Thanks for playing Rock, Paper, Scissors, '\
-      'Lizard, Spock. Good bye!'), nil
+    Banner.print 'Thanks for playing Rock, Paper, Scissors, Lizard, Spock. ' \
+      'Good bye!'
   end
 
   private
@@ -370,7 +372,7 @@ class RPSGame
 
   def display_moves
     $stdout.clear_screen
-    puts Banner.make("Rock, Paper, Scissors, Lizard, Spock!"), nil
+    Banner.print "Rock, Paper, Scissors, Lizard, Spock!"
     puts "#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}", nil
   end
@@ -395,6 +397,8 @@ class RPSGame
 end
 
 class Match
+  SLEEP_TIME = 3
+
   def initialize(game, target_score = 10.0)
     self.game = game
     self.target_score = target_score
@@ -428,7 +432,7 @@ class Match
   def play_round
     round = game.new human, computer
 
-    display_information
+    display_round_info
     round.play
 
     give_score round.winner
@@ -450,28 +454,27 @@ class Match
 
   def display_challenger
     $stdout.clear_screen
-    puts Banner.make("#{human.name}! #{computer.name} has " \
-      "challenged you to a match!"), nil
+    Banner.print "#{human.name}! #{computer.name} has challenged you to a " \
+      "match!"
     puts "Get prepared."
     sleep SLEEP_TIME
   end
 
-  def display_information
+  def display_round_info
     $stdout.clear_screen
-    puts Banner.make("Round #{round_number}; " \
-      "#{human.name}: #{human.score} | #{computer.name}: #{computer.score}" \
-      " | Win = #{target_score}"), nil
+    Banner.print "Round #{round_number}; #{human.name}: #{human.score} | " \
+      "#{computer.name}: #{computer.score} | Win = #{target_score}"
   end
 
   def display_winner
     $stdout.clear_screen
-    puts Banner.make('We have a winner!'), nil
+    Banner.print 'We have a winner!'
 
     target = target_score
     if human.score == computer.score
       puts "Both reached #{target} points. Its a tie.", nil
     else
-      name = human.score > 10 ? human.name : computer.name
+      name = human.score >= 10 ? human.name : computer.name
       puts "#{name} was the first to reach #{target} points. #{name} won!", nil
     end
 

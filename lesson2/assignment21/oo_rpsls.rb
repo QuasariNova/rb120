@@ -1,5 +1,277 @@
 require 'io/console'
 
+module Banner
+  TEXT_WIDTH = 70
+
+  def self.make(str)
+    "===| #{str.center(TEXT_WIDTH)} |==="
+  end
+
+  def self.print(str)
+    puts make(str), nil
+  end
+end
+
+module RPSPlayers
+  class Player
+    attr_reader :move, :name, :score
+
+    def initialize
+      set_name
+      reset_score
+    end
+
+    def reset_score
+      self.score = 0.0
+    end
+
+    def reset_choice
+      self.move = nil
+    end
+
+    def inc_score(value)
+      self.score += value
+    end
+
+    def to_s
+      name
+    end
+
+    private
+
+    attr_writer :move, :name, :score
+  end
+
+  class Human < Player
+    def choose
+      prompt = Prompt.new Move::VALUES, 'Rock, Paper, Scissors, Lizard' \
+        ', or Spock:'
+      prompt.ask
+      self.move = Move.new prompt.result
+    end
+
+    private
+
+    def set_name
+      n = ""
+
+      loop do
+        puts "What's your name?"
+        Prompt.print_prompt
+        n = gets.chomp
+        break unless n.empty?
+        puts "Sorry, must enter a value."
+      end
+
+      self.name = n
+    end
+  end
+
+  # Computer is your basic cpu. It just chooses a move at random
+  class Computer < Player
+    def initialize
+      super
+      self.pref = Move::VALUES
+    end
+
+    def choose
+      self.move = Move.new pref.sample
+    end
+
+    private
+
+    def set_name
+      self.name = 'Computer'
+    end
+
+    attr_accessor :pref
+  end
+
+  # Hal chooses each choice in sequence.
+  class HAL < Computer
+    def initialize
+      super
+      self.idx = 0
+    end
+
+    def choose
+      self.move = Move.new pref[idx % pref.size]
+      change_index
+    end
+
+    private
+
+    def set_name
+      self.name = 'HAL 9000'
+    end
+
+    def change_index
+      self.idx += 1
+    end
+
+    attr_accessor :idx
+  end
+
+  # Femputer chooses each choice in reverse sequence.
+  class Femputer < HAL
+    private
+
+    def set_name
+      self.name = 'Femputer'
+    end
+
+    def change_index
+      self.idx -= 1
+    end
+  end
+
+  # DeepBlue has a sequence that is a bit tricky to see.
+  class DeepBlue < HAL
+    def initialize
+      super
+      self.pref = %w(spock paper lizard scissors rock paper scissors spock
+                     lizard rock)
+    end
+
+    private
+
+    def set_name
+      self.name = 'Deep Blue'
+    end
+  end
+
+  # Warbot only has weapons at his disposal. If only he had hands.
+  class Warbot < Computer
+    def initialize
+      super
+      self.pref = %w(rock rock rock rock rock scissors scissors scissors
+                     scissors)
+    end
+
+    private
+
+    def set_name
+      self.name = 'Warbot CPA'
+    end
+  end
+
+  # BMO doesn't like weapons.
+  class BMO < Computer
+    def initialize
+      super
+      self.pref = %w(paper paper paper paper spock spock spock lizard lizard)
+    end
+
+    private
+
+    def set_name
+      self.name = 'BMO'
+    end
+  end
+
+  # WallE found a rock.
+  class WallE < Computer
+    def choose
+      self.move = Move.new 'rock'
+    end
+
+    private
+
+    def set_name
+      self.name = 'Wall-E'
+    end
+  end
+
+  # C3PO does not like rocks as they can hurt him.
+  class C3P0 < Computer
+    def initialize
+      super
+      self.pref = %w(paper paper paper scissors scissors spock spock spock
+                     lizard)
+    end
+
+    private
+
+    def set_name
+      self.name = 'C3P0'
+    end
+  end
+end
+
+class LogBook
+  TABLE_WIDTH = 40
+  TABLES = 2
+
+  def initialize(idx_col_name, *columns)
+    self.columns = [idx_col_name] + columns
+    self.logs = []
+  end
+
+  def log(data)
+    return unless data.size == columns.size - 1
+    logs << data
+  end
+
+  def display
+    table = []
+    table << header_to_str * TABLES
+
+    table += concat_logs
+
+    puts table, nil
+  end
+
+  private
+
+  attr_accessor :columns, :logs
+
+  def concat_logs
+    mid = (logs.size.to_f / TABLES).ceil
+
+    (0...mid).map do |idx|
+      row = entry_to_str idx
+      1.upto(TABLES - 1) do |mul|
+        id = idx + mul * mid
+        row += entry_to_str id
+      end
+
+      row
+    end
+  end
+
+  def entry_to_str(idx)
+    return '' if idx >= logs.size
+    cols = []
+    cols << "| #{(idx + 1).to_s.center 3} |"
+    width = column_width - 2
+
+    logs[idx].each do |data|
+      cols << " #{data.to_s[0, width].center(width)} |"
+    end
+
+    cols.join.center(TABLE_WIDTH)
+  end
+
+  def header_to_str
+    cols = []
+    cols << "| #{columns.first.to_s[0, 3].center 3} |"
+    width = column_width - 2
+
+    columns[1..-1].each do |label|
+      cols << " #{label.to_s[0, width].center(width)} |"
+    end
+
+    cols.join.center(TABLE_WIDTH)
+  end
+
+  def column_width
+    col = columns.size - 1
+    width = TABLE_WIDTH - 7 - col # 7 for first column, col for separators
+    width / col
+  end
+end
+
+# Prompt is used to prompt the user for information then validates the input.
 class Prompt
   attr_reader :result
 
@@ -73,18 +345,6 @@ class Prompt
   end
 end
 
-module Banner
-  TEXT_WIDTH = 70
-
-  def self.make(str)
-    "===| #{str.center(TEXT_WIDTH)} |==="
-  end
-
-  def self.print(str)
-    puts make(str), nil
-  end
-end
-
 # I did not implement the moves are a subclass feature of Move. The main
 # reason I did not is because I feel that they aren't a good thing to subclass
 # due to two reasons. First, they don't have any behaviors that are different.
@@ -95,6 +355,11 @@ end
 # If I did add the feature, I'd be gaining a bigger headache in having to
 # deal with 5 diffent classes to choose a move and handle string->which class
 # needs instantiated. I would gain nothing from this.
+#
+# If I wasn't comparing them the way I am, it might be better. Each move has
+# different moves it beats, so we could define different array of values that
+# it beats so we don't have to write out each conditional. I again don't do
+# that, so its of no use to me.
 #
 # It is simple enough to do, just have the individual subclasses set their
 # @value instance variable to their option in their initialize and remove the
@@ -156,185 +421,12 @@ class Move
   attr_reader :value
 end
 
-class Player
-  attr_reader :move, :name, :score
-
-  def initialize
-    set_name
-    reset_score
-  end
-
-  def reset_score
-    self.score = 0.0
-  end
-
-  def reset_choice
-    self.move = nil
-  end
-
-  def inc_score(value)
-    self.score += value
-  end
-
-  private
-
-  attr_writer :move, :name, :score
-end
-
-class Human < Player
-  def choose
-    prompt = Prompt.new Move::VALUES, "Rock, Paper, Scissors, Lizard, or Spock:"
-    prompt.ask
-    self.move = Move.new prompt.result
-  end
-
-  private
-
-  def set_name
-    n = ""
-
-    loop do
-      puts "What's your name?"
-      Prompt.print_prompt
-      n = gets.chomp
-      break unless n.empty?
-      puts "Sorry, must enter a value."
-    end
-
-    self.name = n
-  end
-end
-
-# Computer is your basic cpu. It just chooses a move at random
-class Computer < Player
-  def initialize
-    super
-    self.pref = Move::VALUES
-  end
-
-  def choose
-    self.move = Move.new pref.sample
-  end
-
-  private
-
-  def set_name
-    self.name = 'Computer'
-  end
-
-  attr_accessor :pref
-end
-
-# Hal chooses each choice in sequence.
-class HAL < Computer
-  def initialize
-    super
-    self.idx = 0
-  end
-
-  def choose
-    self.move = Move.new pref[idx % pref.size]
-    change_index
-  end
-
-  private
-
-  def set_name
-    self.name = 'HAL 9000'
-  end
-
-  def change_index
-    self.idx += 1
-  end
-
-  attr_accessor :idx
-end
-
-# Femputer chooses each choice in reverse sequence.
-class Femputer < HAL
-  private
-
-  def set_name
-    self.name = 'Femputer'
-  end
-
-  def change_index
-    self.idx -= 1
-  end
-end
-
-# DeepBlue has a sequence that is a bit tricky to see.
-class DeepBlue < HAL
-  def initialize
-    super
-    self.pref = %w(spock paper lizard scissors rock paper scissors spock lizard
-                   rock)
-  end
-
-  private
-
-  def set_name
-    self.name = 'Deep Blue'
-  end
-end
-
-# Warbot only has weapons at his disposal. If only he had hands.
-class Warbot < Computer
-  def initialize
-    super
-    self.pref = %w(rock rock rock rock rock scissors scissors scissors scissors)
-  end
-
-  private
-
-  def set_name
-    self.name = 'Warbot CPA'
-  end
-end
-
-# BMO doesn't like weapons.
-class BMO < Computer
-  def initialize
-    super
-    self.pref = %w(paper paper paper paper spock spock spock lizard lizard)
-  end
-
-  private
-
-  def set_name
-    self.name = 'BMO'
-  end
-end
-
-# WallE found a rock.
-class WallE < Computer
-  def choose
-    self.move = Move.new 'rock'
-  end
-
-  private
-
-  def set_name
-    self.name = 'Wall-E'
-  end
-end
-
-# C3PO does not like rocks as they can hurt him.
-class C3P0 < Computer
-  def initialize
-    super
-    self.pref = %w(paper paper paper scissors scissors spock spock spock lizard)
-  end
-
-  private
-
-  def set_name
-    self.name = 'C3P0'
-  end
-end
-
+# RPSGame contains everything you need to play a single game of RPSLS.
 class RPSGame
-  AI = [Computer, HAL, Warbot, BMO, WallE, Femputer, DeepBlue, C3P0].freeze
+  AI = [RPSPlayers::Computer, RPSPlayers::HAL, RPSPlayers::Warbot,
+        RPSPlayers::BMO, RPSPlayers::WallE, RPSPlayers::Femputer,
+        RPSPlayers::DeepBlue, RPSPlayers::C3P0].freeze
+  HUMAN = RPSPlayers::Human
 
   attr_reader :winner
 
@@ -352,6 +444,11 @@ class RPSGame
     display_moves
     set_winner
     display_winner
+  end
+
+  def to_log
+    results = winner.size > 1 ? "Tie" : winner.first
+    [human.move, computer.move, results]
   end
 
   def self.display_welcome_message
@@ -396,22 +493,25 @@ class RPSGame
   end
 end
 
+# Match is used to turn any Game that has the same interface as RPSGame into
+# a series of rounds with a target score to declare the winner. While I don't
+# have any other games to pass it right now, I designed it with polymorphism in
+# mind.
 class Match
   SLEEP_TIME = 3
 
-  def initialize(game, target_score = 10.0)
+  def initialize(game, target_score = 10)
     self.game = game
     self.target_score = target_score
     self.round_number = 1
 
     game.display_welcome_message
-    self.human = Human.new
+    self.human = game::HUMAN.new
   end
 
   def play
     loop do
-      human.reset_score
-      self.computer = game::AI.sample.new
+      prepare_match
 
       display_challenger
 
@@ -427,13 +527,21 @@ class Match
 
   private
 
-  attr_accessor :game, :target_score, :human, :computer, :round_number
+  attr_accessor :game, :target_score, :human, :computer, :round_number, :log
+
+  def prepare_match
+    human.reset_score
+    self.computer = game::AI.sample.new
+    self.log = LogBook.new 'rnd', human, computer, 'results'
+  end
 
   def play_round
     round = game.new human, computer
 
     display_round_info
     round.play
+
+    log.log round.to_log
 
     give_score round.winner
     self.round_number += 1
@@ -470,15 +578,20 @@ class Match
     $stdout.clear_screen
     Banner.print 'We have a winner!'
 
-    target = target_score
-    if human.score == computer.score
-      puts "Both reached #{target} points. Its a tie.", nil
-    else
-      name = human.score >= 10 ? human.name : computer.name
-      puts "#{name} was the first to reach #{target} points. #{name} won!", nil
-    end
+    puts winner_str, nil
+
+    log.display
 
     sleep SLEEP_TIME
+  end
+
+  def winner_str
+    if human.score == computer.score
+      "Both reached #{target_score} points. Its a tie."
+    else
+      name = human.score >= target_score ? human.name : computer.name
+      "#{name} was the first to reach #{target_score} points. #{name} won!"
+    end
   end
 
   def winner?
@@ -495,4 +608,4 @@ class Match
   end
 end
 
-Match.new(RPSGame).play
+Match.new(RPSGame, 5).play

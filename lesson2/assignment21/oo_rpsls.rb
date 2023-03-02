@@ -214,7 +214,7 @@ class LogBook
 
   def display
     table = []
-    table << header_to_str * TABLES
+    table << header_to_row * TABLES
 
     table += concat_logs
 
@@ -229,17 +229,17 @@ class LogBook
     mid = (logs.size.to_f / TABLES).ceil
 
     (0...mid).map do |idx|
-      row = entry_to_str idx
+      row = entry_to_row idx
       1.upto(TABLES - 1) do |mul|
         id = idx + mul * mid
-        row += entry_to_str id
+        row += entry_to_row id
       end
 
       row
     end
   end
 
-  def entry_to_str(idx)
+  def entry_to_row(idx)
     return '' if idx >= logs.size
     cols = []
     cols << "| #{(idx + 1).to_s.center 3} |"
@@ -252,7 +252,7 @@ class LogBook
     cols.join.center(TABLE_WIDTH)
   end
 
-  def header_to_str
+  def header_to_row
     cols = []
     cols << "| #{columns.first.to_s[0, 3].center 3} |"
     width = column_width - 2
@@ -350,7 +350,7 @@ end
 # due to two reasons. First, they don't have any behaviors that are different.
 # Secondly, they only differ in state, they don't require different instance
 # variables or require them to be handled differently. They seem to be best
-# suited to being a single object together.
+# suited to being a single object together. At least in my implementation.
 #
 # If I did add the feature, I'd be gaining a bigger headache in having to
 # deal with 5 diffent classes to choose a move and handle string->which class
@@ -578,14 +578,14 @@ class Match
     $stdout.clear_screen
     Banner.print 'We have a winner!'
 
-    puts results_str, nil
+    puts results, nil
 
     log.display
 
     sleep SLEEP_TIME
   end
 
-  def results_str
+  def results
     if human.score == computer.score
       "Both reached #{target_score} points. Its a tie."
     else
@@ -608,4 +608,4 @@ class Match
   end
 end
 
-Match.new(RPSGame, 5).play
+Match.new(RPSGame, 10).play

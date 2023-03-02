@@ -427,6 +427,7 @@ class RPSGame
         RPSPlayers::BMO, RPSPlayers::WallE, RPSPlayers::Femputer,
         RPSPlayers::DeepBlue, RPSPlayers::C3P0].freeze
   HUMAN = RPSPlayers::Human
+  GAME_NAME = 'Rock, Paper, Scissors, Lizard, Spock'
 
   attr_reader :winner
 
@@ -453,13 +454,12 @@ class RPSGame
 
   def self.display_welcome_message
     $stdout.clear_screen
-    Banner.print 'Welcome to Rock, Paper, Scissors, Lizard, Spock!'
+    Banner.print "Welcome to #{GAME_NAME}!"
   end
 
   def self.display_goodbye_message
     $stdout.clear_screen
-    Banner.print 'Thanks for playing Rock, Paper, Scissors, Lizard, Spock. ' \
-      'Good bye!'
+    Banner.print "Thanks for playing #{GAME_NAME}. Good bye!"
   end
 
   private
@@ -503,7 +503,6 @@ class Match
   def initialize(game, target_score = 10)
     self.game = game
     self.target_score = target_score
-    self.round_number = 1
   end
 
   def play
@@ -532,7 +531,8 @@ class Match
   def prepare_match
     human.reset_score
     self.computer = game::AI.sample.new
-    self.log = LogBook.new 'rnd', human, computer, 'results'
+    self.round_number = 1
+    self.log = LogBook.new 'RND', human, computer, 'Results'
   end
 
   def play_round
@@ -578,14 +578,14 @@ class Match
     $stdout.clear_screen
     Banner.print 'We have a winner!'
 
-    puts winner_str, nil
+    puts results_str, nil
 
     log.display
 
     sleep SLEEP_TIME
   end
 
-  def winner_str
+  def results_str
     if human.score == computer.score
       "Both reached #{target_score} points. Its a tie."
     else

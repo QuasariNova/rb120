@@ -11,11 +11,9 @@
 # - play
 
 class Board
-  INITIAL_MARKER = ' '
-
   def initialize
     @squares = {}
-    (1..9).each { |key| @squares[key] = Square.new INITIAL_MARKER }
+    (1..9).each { |key| @squares[key] = Square.new }
   end
 
   def [](key)
@@ -29,12 +27,18 @@ class Board
   def unmarked_keys
     @squares.select { |_, sq| sq.unmarked? }.keys
   end
+
+  def full?
+    unmarked_keys.empty?
+  end
 end
 
 class Square
+  INITIAL_MARKER = ' '
+
   attr_accessor :marker
 
-  def initialize(marker)
+  def initialize(marker = INITIAL_MARKER)
     @marker = marker
   end
 
@@ -43,7 +47,7 @@ class Square
   end
 
   def unmarked?
-    marker == Board::INITIAL_MARKER
+    marker == INITIAL_MARKER
   end
 end
 
@@ -76,6 +80,8 @@ class TTTGame
   end
 
   def display_board
+    system 'clear'
+    puts "You are a #{human.marker}. Computer is a #{computer.marker}."
     puts <<~BOARD
 
          |     |
@@ -109,18 +115,25 @@ class TTTGame
     board[board.unmarked_keys.sample] = computer.marker
   end
 
+  def display_result
+    display_board
+    puts "The board is full."
+  end
+
   def play
     display_welcome_message
     display_board
     loop do
       human_moves
+      break if board.full?
       # break if someone_won? || board_full?
 
       computer_moves
       display_board
+      break if board.full?
       # break if someone_won? || board_full?
     end
-    # display_result
+    display_result
     display_goodbye_message
   end
 end

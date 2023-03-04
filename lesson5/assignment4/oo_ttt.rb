@@ -27,11 +27,11 @@ class Board
   end
 
   def someone_won?
-    !!detect_winner
+    !!winning_mark
   end
 
   # return winning marker or nil
-  def detect_winner
+  def winning_mark
     WINNING_LINES.each do |line|
       win = line.uniq { |key| squares[key].marker }
       return squares[line[0]].marker if win.one? && !squares[win[0]].unmarked?
@@ -138,7 +138,7 @@ class TTTGame
   def display_result
     clear_screen_and_display_board
 
-    case board.detect_winner
+    case board.winning_mark
     when human.marker
       puts 'You won!'
     when computer.marker
@@ -161,6 +161,15 @@ class TTTGame
     answer == 'y'
   end
 
+  def reset
+    board.reset
+    clear
+  end
+
+  def display_play_again_message
+    puts "Let's play again!", nil
+  end
+
   def play
     display_welcome_message
     loop do
@@ -176,9 +185,8 @@ class TTTGame
       end
       display_result
       break unless play_again?
-      board.reset
-      system 'clear'
-      puts "Let's play again!", nil
+      reset
+      display_play_again_message
     end
     display_goodbye_message
   end

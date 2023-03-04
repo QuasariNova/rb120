@@ -93,12 +93,14 @@ class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
 
-  attr_reader :board, :human, :computer
+  attr_reader :board, :human, :computer, :turn_number, :first
 
   def initialize
     @board = Board.new
     @human = Player.new 'X'
     @computer = Player.new 'O'
+    @turn_number = 1
+    @first = :human
   end
 
   def clear
@@ -170,10 +172,25 @@ class TTTGame
   def reset
     board.reset
     clear
+    @turn_number = 1
   end
 
   def display_play_again_message
     puts "Let's play again!", nil
+  end
+
+  def current_player_moves
+    if human_turn?
+      human_moves
+    else
+      computer_moves
+    end
+    @turn_number += 1
+  end
+
+  def human_turn?
+    adjusted_turn = first == :human ? turn_number : turn_number - 1
+    adjusted_turn.odd?
   end
 
   def play
@@ -182,12 +199,9 @@ class TTTGame
       display_board
 
       loop do
-        human_moves
+        current_player_moves
         break if board.someone_won? || board.full?
-
-        computer_moves
-        clear_screen_and_display_board
-        break if board.someone_won? || board.full?
+        clear_screen_and_display_board if human_turn?
       end
       display_result
       break unless play_again?

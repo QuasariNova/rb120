@@ -10,8 +10,20 @@ class Board
     reset
   end
 
-  def [](key)
-    squares[key]
+  def draw
+    puts <<~BOARD
+         |     |
+      #{squares[1]}  |  #{squares[2]}  |  #{squares[3]}
+         |     |
+    -----+-----+-----
+         |     |
+      #{squares[4]}  |  #{squares[5]}  |  #{squares[6]}
+         |     |
+    -----+-----+-----
+         |     |
+      #{squares[7]}  |  #{squares[8]}  |  #{squares[9]}
+         |     |
+    BOARD
   end
 
   def []=(key, value)
@@ -96,22 +108,9 @@ class TTTGame
   end
 
   def display_board
-    puts "You are a #{human.marker}. Computer is a #{computer.marker}."
-    puts <<~BOARD
-
-         |     |
-      #{board[1]}  |  #{board[2]}  |  #{board[3]}
-         |     |
-    -----+-----+-----
-         |     |
-      #{board[4]}  |  #{board[5]}  |  #{board[6]}
-         |     |
-    -----+-----+-----
-         |     |
-      #{board[7]}  |  #{board[8]}  |  #{board[9]}
-         |     |
-
-    BOARD
+    puts "You are a #{human.marker}. Computer is a #{computer.marker}.", nil
+    board.draw
+    puts nil
   end
 
   def clear_screen_and_display_board

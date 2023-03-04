@@ -3,8 +3,6 @@ class Board
                    [1, 4, 7], [2, 5, 8], [3, 6, 9],
                    [1, 5, 9], [3, 5, 7]]
 
-  attr_reader :squares
-
   def initialize
     @squares = {}
     reset
@@ -26,8 +24,8 @@ class Board
     BOARD
   end
 
-  def []=(key, value)
-    squares[key].marker = value
+  def []=(key, mark)
+    squares[key].marker = mark
   end
 
   def unmarked_keys
@@ -45,8 +43,9 @@ class Board
   # return winning marker or nil
   def winning_mark
     WINNING_LINES.each do |line|
-      win = line.uniq { |key| squares[key].marker }
-      return squares[line[0]].marker if win.one? && !squares[win[0]].unmarked?
+      possible_win = line.uniq { |key| squares[key].marker }
+      square = squares[possible_win[0]]
+      return square.marker if possible_win.one? && square.marked?
     end
     nil
   end
@@ -54,6 +53,10 @@ class Board
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
+
+  private
+
+  attr_reader :squares
 end
 
 class Square
@@ -71,6 +74,10 @@ class Square
 
   def unmarked?
     marker == INITIAL_MARKER
+  end
+
+  def marked?
+    marker != INITIAL_MARKER
   end
 end
 

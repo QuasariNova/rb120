@@ -21,9 +21,15 @@ class Board
   def [](key)
     @squares[key]
   end
+
+  def []=(key, value)
+    @squares[key] = value
+  end
 end
 
 class Square
+  attr_accessor :marker
+
   def initialize(marker)
     @marker = marker
   end
@@ -34,18 +40,20 @@ class Square
 end
 
 class Player
-  def initialize
-  end
+  attr_reader :marker
 
-  def mark
+  def initialize(marker)
+    @marker = marker
   end
 end
 
 class TTTGame
-  attr_reader :board
+  attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
+    @human = Player.new 'X'
+    @computer = Player.new 'O'
   end
 
   def display_welcome_message
@@ -74,15 +82,28 @@ class TTTGame
     BOARD
   end
 
+  def human_moves
+    puts "Choose a square between 1-9:"
+    square = nil
+    loop do
+      square = gets.chomp.to_i
+      break if (1..9).include? square
+      puts "Sorry, that's a not a valid choice."
+    end
+
+    board[square] = human.marker
+  end
+
   def play
     display_welcome_message
     loop do
       display_board
+      human_moves
+      display_board
       break
-      first_player_moves
       break if someone_won? || board_full?
 
-      second_player_moves
+      computer_moves
       break if someone_won? || board_full?
     end
     # display_result

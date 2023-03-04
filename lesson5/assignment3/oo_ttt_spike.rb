@@ -11,12 +11,25 @@
 # - play
 
 class Board
+  INITIAL_MARKER = ' '
+
   def initialize
+    @squares = {}
+    (1..9).each { |key| @squares[key] = Square.new INITIAL_MARKER }
+  end
+
+  def [](key)
+    @squares[key]
   end
 end
 
 class Square
-  def initialize
+  def initialize(marker)
+    @marker = marker
+  end
+
+  def to_s
+    @marker
   end
 end
 
@@ -29,6 +42,12 @@ class Player
 end
 
 class TTTGame
+  attr_reader :board
+
+  def initialize
+    @board = Board.new
+  end
+
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!", nil
   end
@@ -38,18 +57,21 @@ class TTTGame
   end
 
   def display_board
-    puts nil
-    puts "     |     |"
-    puts "     |     |"
-    puts "     |     |"
-    puts "-----+-----+-----"
-    puts "     |     |"
-    puts "     |     |"
-    puts "     |     |"
-    puts "-----+-----+-----"
-    puts "     |     |"
-    puts "     |     |"
-    puts "     |     |", nil
+    puts <<~BOARD
+
+         |     |
+      #{board[1]}  |  #{board[2]}  |  #{board[3]}
+         |     |
+    -----+-----+-----
+         |     |
+      #{board[4]}  |  #{board[5]}  |  #{board[6]}
+         |     |
+    -----+-----+-----
+         |     |
+      #{board[7]}  |  #{board[8]}  |  #{board[9]}
+         |     |
+
+    BOARD
   end
 
   def play

@@ -48,6 +48,9 @@ class Player
 end
 
 class TTTGame
+  HUMAN_MARKER = "X"
+  COMPUTER_MARKER = "O"
+
   attr_reader :board, :human, :computer
 
   def initialize
@@ -94,17 +97,22 @@ class TTTGame
     board[square] = human.marker
   end
 
+  def computer_moves
+    board[(1..9).to_a.sample] = computer.marker
+  end
+
   def play
     display_welcome_message
     loop do
       display_board
       human_moves
       display_board
-      break
-      break if someone_won? || board_full?
+      # break if someone_won? || board_full?
 
       computer_moves
-      break if someone_won? || board_full?
+      display_board
+      break
+      # break if someone_won? || board_full?
     end
     # display_result
     display_goodbye_message

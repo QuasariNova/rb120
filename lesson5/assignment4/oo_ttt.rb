@@ -82,8 +82,12 @@ class TTTGame
     @computer = Player.new 'O'
   end
 
-  def display_welcome_message
+  def clear
     system 'clear'
+  end
+
+  def display_welcome_message
+    clear
     puts "Welcome to Tic Tac Toe!", nil
   end
 
@@ -91,8 +95,8 @@ class TTTGame
     puts "Thanks for playing Tic Tac Toe! Goodbye!"
   end
 
-  def display_board(clear = true)
-    system 'clear' if clear
+  def display_board(clear_screen = true)
+    clear if clear_screen
     puts "You are a #{human.marker}. Computer is a #{computer.marker}."
     puts <<~BOARD
 

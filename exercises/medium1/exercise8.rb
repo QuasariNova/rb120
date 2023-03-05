@@ -77,22 +77,20 @@ class Card
   include Comparable
 
   def initialize(rank, suit)
-    @rank = RANKS.index(rank)
+    @rank_index = RANKS.index(rank)
     @suit = suit
   end
 
   def rank
-    RANKS[@rank]
+    RANKS[rank_index]
   end
 
   def <=>(other)
-    true_rank <=> other.true_rank
+    rank_index <=> other.rank_index
   end
   protected
 
-  def true_rank
-    @rank
-  end
+  attr_reader :rank_index
 end
 
 cards = [Card.new(2, 'Hearts'),

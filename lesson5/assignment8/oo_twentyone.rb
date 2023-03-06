@@ -11,6 +11,10 @@ class Hand
     cards << card
   end
 
+  def to_s
+    "#{cards.join(' ')}"
+  end
+
   def busted?
   end
 
@@ -27,7 +31,23 @@ class Player < Hand
 end
 
 class Dealer < Hand
+  def initialize
+    super
+    @hidden = true
+  end
 
+  def reveal
+    @hidden = false
+  end
+
+  def to_s
+    return super unless hidden
+    "?? #{cards[1..-1].join(' ')}"
+  end
+
+  private
+
+  attr_reader :hidden
 end
 
 class Deck
@@ -52,7 +72,7 @@ class Deck
 end
 
 class Card
-  RANKS = %w(A 1 2 3 4 5 6 7 8 9 10 J Q K).freeze
+  RANKS = %w(A 2 3 4 5 6 7 8 9 10 J Q K).freeze
   SUITS = %w(♠ ♣ ♥ ♦).freeze
 
   attr_reader :rank, :suit
@@ -70,8 +90,8 @@ end
 class Game
   def initialize
     @deck = Deck.new
-    @human = Hand.new
-    @dealer = Hand.new
+    @human = Player.new
+    @dealer = Dealer.new
   end
 
   def display_welcome_message
@@ -89,13 +109,16 @@ class Game
     end
   end
 
+  def show_cards
+    puts "You Have: #{human}"
+    puts "Dealer Has: #{dealer}"
+  end
+
   def play
     display_welcome_message
 
     deal_cards
-    p human
-    p dealer
-    # show_cards
+    show_cards
     # player_turn
     # dealer_turn
     # show_result

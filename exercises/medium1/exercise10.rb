@@ -239,13 +239,11 @@ class PokerHand
   end
 
   def four_of_a_kind?
-    hand.each { |card| return true if 4 == count_of(card.rank) }
-    false
+    n_of_a_kind? 4
   end
 
   def full_house?
-    unique_cards = hand.uniq { |card| card.rank }
-    unique_cards.size == 2 && [2, 3].include?(count_of(unique_cards.first.rank))
+    n_of_a_kind?(2) && n_of_a_kind?(3)
   end
 
   def flush?
@@ -257,8 +255,7 @@ class PokerHand
   end
 
   def three_of_a_kind?
-    hand.each { |card| return true if 3 == count_of(card.rank) }
-    false
+    n_of_a_kind? 3
   end
 
   def two_pair?

@@ -3,10 +3,6 @@ class Hand
     @cards = []
   end
 
-  def hit_or_stay
-    :stay
-  end
-
   def receive_card(card)
     cards << card
   end
@@ -16,9 +12,17 @@ class Hand
   end
 
   def busted?
+    total > 21
   end
 
   def total
+    ttl = cards.sum { |card| card.value }
+    aces = cards.select { |card| card.rank == 'A' }
+    aces.size.times do
+      break unless ttl > 21
+      ttl -= 10
+    end
+    ttl
   end
 
   private
@@ -27,13 +31,33 @@ class Hand
 end
 
 class Player < Hand
+  attr_reader :name
 
+  def initialize
+    super
+    @name = "Player"
+  end
+
+  def hit_or_stay
+    answer = nil
+    loop do
+      puts "Would you like to hit or stay?"
+      print "=> "
+      answer = gets.chomp.downcase
+      break if ['hit', 'stay'].include? answer
+      puts "Please input hit or"
+    end
+    answer.to_sym
+  end
 end
 
 class Dealer < Hand
+  attr_reader :name
+
   def initialize
     super
     @hidden = true
+    @name = "Dealer"
   end
 
   def reveal
@@ -43,6 +67,14 @@ class Dealer < Hand
   def to_s
     return super unless hidden
     "?? #{cards[1..-1].join(' ')}"
+  end
+
+  def hit_or_stay
+    if total < 17
+      :hit
+    else
+      :stay
+    end
   end
 
   private
@@ -85,6 +117,13 @@ class Card
   def to_s
     rank + suit
   end
+
+  def value
+    value = RANKS.index(rank) + 1
+    return 11 if value == 1
+    return 10 if value > 10
+    value
+  end
 end
 
 class Game
@@ -110,8 +149,19 @@ class Game
   end
 
   def show_cards
-    puts "You Have: #{human}"
-    puts "Dealer Has: #{dealer}"
+    puts "#{human.name} has: #{human}"
+    puts "#{dealer.name} has: #{dealer}"
+  end
+
+  def player_turn(player)
+    loop do
+      action = player.hit_or_stay
+      puts "#{player.name} #{action}s."
+      player.receive_card deck.draw if action == :hit
+      show_cards
+      break if player.busted? || action == :stay
+    end
+    puts "#{player.name} busted" if player.busted?
   end
 
   def play
@@ -119,8 +169,9 @@ class Game
 
     deal_cards
     show_cards
-    # player_turn
-    # dealer_turn
+    player_turn human
+    dealer.reveal
+    player_turn dealer unless human.busted?
     # show_result
 
     display_goodbye_message

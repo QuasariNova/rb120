@@ -133,6 +133,32 @@ class Game
     @dealer = Dealer.new
   end
 
+  def play
+    display_welcome_message
+
+    deal_cards
+    player_turn human
+    dealer.reveal
+    player_turn dealer unless human.busted?
+    show_result
+
+    display_goodbye_message
+  end
+
+  private
+
+  attr_reader :human, :dealer, :deck
+
+  def winner_message
+    if human.busted? || !dealer.busted? && dealer.total > human.total
+      "#{dealer.name} has won!"
+    elsif dealer.busted? || !human.busted? && human.total > dealer.total
+      "#{human.name} has won!"
+    else
+      "It's a tie!"
+    end
+  end
+
   def display_welcome_message
     puts "Welcome to 21"
   end
@@ -155,31 +181,25 @@ class Game
 
   def player_turn(player)
     loop do
+      show_cards
       action = player.hit_or_stay
       puts "#{player.name} #{action}s."
-      player.receive_card deck.draw if action == :hit
-      show_cards
+      if action == :hit
+        card = deck.draw
+        puts "#{player.name} receives #{card}."
+        player.receive_card card
+      end
       break if player.busted? || action == :stay
     end
     puts "#{player.name} busted" if player.busted?
   end
 
-  def play
-    display_welcome_message
-
-    deal_cards
+  def show_result
     show_cards
-    player_turn human
-    dealer.reveal
-    player_turn dealer unless human.busted?
-    # show_result
-
-    display_goodbye_message
+    puts "#{human.name} has #{human.total}"
+    puts "#{dealer.name} has #{dealer.total}"
+    puts "#{winner_message}"
   end
-
-  private
-
-  attr_reader :human, :dealer, :deck
 end
 
 Game.new.play

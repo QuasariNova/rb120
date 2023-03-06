@@ -1,11 +1,14 @@
-class Player
+class Hand
   def initialize
+    @cards = []
   end
 
-  def hit
+  def hit_or_stay
+    :stay
   end
 
-  def stay
+  def receive_card(card)
+    cards << card
   end
 
   def busted?
@@ -13,46 +16,62 @@ class Player
 
   def total
   end
+
+  private
+
+  attr_accessor :cards
 end
 
-class Dealer
-  def initialize
-  end
+class Player < Hand
 
-  def deal # This or deck?
-  end
-
-  def hit
-  end
-
-  def stay
-  end
-
-  def busted?
-  end
-
-  def total
-  end
 end
 
-class Participant # Maybe
+class Dealer < Hand
+
 end
 
 class Deck
   def initialize
+    shuffle
   end
 
-  def deal # Dealer or here?
+  def draw
+    cards.pop
   end
+
+  def shuffle
+    self.cards = Card::RANKS.product(Card::SUITS).map do |data|
+      Card.new *data
+    end
+    cards.shuffle!
+  end
+
+  private
+
+  attr_accessor :cards
 end
 
 class Card
-  def initialize
+  RANKS = %w(A 1 2 3 4 5 6 7 8 9 10 J Q K).freeze
+  SUITS = %w(♠ ♣ ♥ ♦).freeze
+
+  attr_reader :rank, :suit
+
+  def initialize(rank, suit)
+    @rank = rank
+    @suit = suit
+  end
+
+  def to_s
+    rank + suit
   end
 end
 
 class Game
   def initialize
+    @deck = Deck.new
+    @human = Hand.new
+    @dealer = Hand.new
   end
 
   def display_welcome_message
@@ -63,10 +82,19 @@ class Game
     puts "Thanks for playing 21"
   end
 
+  def deal_cards
+    2.times do
+      human.receive_card deck.draw
+      dealer.receive_card deck.draw
+    end
+  end
+
   def play
     display_welcome_message
 
-    # deal_cards
+    deal_cards
+    p human
+    p dealer
     # show_cards
     # player_turn
     # dealer_turn
@@ -74,6 +102,10 @@ class Game
 
     display_goodbye_message
   end
+
+  private
+
+  attr_reader :human, :dealer, :deck
 end
 
 Game.new.play

@@ -8,7 +8,7 @@ class Hand
   end
 
   def to_s
-    "#{cards.join(' ')}"
+    cards.join(' ')
   end
 
   def busted?
@@ -16,7 +16,7 @@ class Hand
   end
 
   def total
-    ttl = cards.sum { |card| card.value }
+    ttl = cards.sum(&:value)
     aces = cards.select { |card| card.rank == 'A' }
     aces.size.times do
       break unless ttl > 21
@@ -93,7 +93,7 @@ class Deck
 
   def shuffle
     self.cards = Card::RANKS.product(Card::SUITS).map do |data|
-      Card.new *data
+      Card.new(*data)
     end
     cards.shuffle!
   end
@@ -150,6 +150,8 @@ class Game
   attr_reader :human, :dealer, :deck
 
   def winner_message
+    human = self.human
+    dealer = self.dealer
     if human.busted? || !dealer.busted? && dealer.total > human.total
       "#{dealer.name} has won!"
     elsif dealer.busted? || !human.busted? && human.total > dealer.total
@@ -184,21 +186,23 @@ class Game
       show_cards
       action = player.hit_or_stay
       puts "#{player.name} #{action}s."
-      if action == :hit
-        card = deck.draw
-        puts "#{player.name} receives #{card}."
-        player.receive_card card
-      end
+      perform_hit player if action == :hit
       break if player.busted? || action == :stay
     end
     puts "#{player.name} busted" if player.busted?
+  end
+
+  def perform_hit(player)
+    card = deck.draw
+    puts "#{player.name} receives #{card}."
+    player.receive_card card
   end
 
   def show_result
     show_cards
     puts "#{human.name} has #{human.total}"
     puts "#{dealer.name} has #{dealer.total}"
-    puts "#{winner_message}"
+    puts winner_message
   end
 end
 

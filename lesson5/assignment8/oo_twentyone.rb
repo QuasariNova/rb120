@@ -128,19 +128,20 @@ end
 
 class Game
   def initialize
-    @deck = Deck.new
-    @human = Player.new
-    @dealer = Dealer.new
+    reset
   end
 
   def play
     display_welcome_message
 
-    deal_cards
-    player_turn human
-    dealer.reveal
-    player_turn dealer unless human.busted?
-    show_result
+    loop do
+      deal_cards
+      player_turn human
+      player_turn dealer unless human.busted?
+      show_result
+      break unless play_again?
+      reset
+    end
 
     display_goodbye_message
   end
@@ -148,6 +149,12 @@ class Game
   private
 
   attr_reader :human, :dealer, :deck
+
+  def reset
+    @deck = Deck.new
+    @human = Player.new
+    @dealer = Dealer.new
+  end
 
   def winner_message
     human = self.human
@@ -182,6 +189,7 @@ class Game
   end
 
   def player_turn(player)
+    player.reveal if player == dealer
     loop do
       show_cards
       action = player.hit_or_stay
@@ -203,6 +211,18 @@ class Game
     puts "#{human.name} has #{human.total}"
     puts "#{dealer.name} has #{dealer.total}"
     puts winner_message
+  end
+
+  def play_again?
+    answer = nil
+    loop do
+      puts "Would you like to play again? (y/n)"
+      print "=> "
+      answer = gets.chomp.downcase
+      break if ['y', 'n'].include? answer
+      puts "Sorry, must be y or n."
+    end
+    answer == 'y'
   end
 end
 

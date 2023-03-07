@@ -21,28 +21,6 @@ Encapsulation lets us hide functionality of the object, but we can not hide ever
 
 The point of encapsulation is that we get the results we expect from the public interface. Implementation details don't matter as long as the publich interface acts as it should.
 
-#### What is an object? [book](https://launchschool.com/books/oo_ruby/read/the_object_model#whatareobjects)
-
-Objects encapsulate state and are created from classes. They are an instance of a class. Everything with a value, thus state, is an object in Ruby. Individual objects have diffent states, but can still be instances of the same class.
-
-#### What is a class? ([book](https://launchschool.com/books/oo_ruby/read/the_object_model#classesdefineobjects))
-
-Classes are the blueprint that objects follow. Classes define both the behaviors and attributes of its objects.
-
-In ruby, we define a class using `class` and end the definition with the reserved word `end`. Class names must start with a capital letter. A sample class could be something like this:
-
-```ruby
-class Car
-  def initialize
-    @paint = red
-  end
-end
-```
-
-#### What is instantiation? [book](https://launchschool.com/books/oo_ruby/read/the_object_model#classesdefineobjects)
-
-The workflow of creating a new object from a class is called instatiation. In ruby, we instantiate instances of a class(objects) via the class method `new`.
-
 ### What is polymorphism? ([book](https://launchschool.com/books/oo_ruby/read/the_object_model)) ([lesson2](https://launchschool.com/lessons/dfff5f6b/assignments/8c6b8604))
 
 Polymorphism is the ability of different objects to respond to a common interface. Basically, its when two or more object types have a method with the same name in its public interface. This allows us to not really care what object we are calling that method on. They may have different functionality or implementation, but they still share a common interface.

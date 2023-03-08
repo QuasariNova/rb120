@@ -53,8 +53,10 @@ In the above example, we create two objects of the `Person` types by calling `.n
 ## How to call setters and getters
 ### Accessors ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethods))
 
+Accessor Methods are instance methods that interact with instance variables that allow you to set or get the data contained within the state of an object.
+
 ### setters ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethods))
-Setters are instance methods defined inside a class that are coded to set an instance variable for an object. They are methods that name ends in an `=`, though by convention the instance variables name would prepend that `=`. So a setter for the instance variable `@name` would be called `name=`. Thanks to Ruby's syntactical sugar, we are able to call this method with a space like our other assignment methods.
+Setters are accessor methods defined inside a class that are coded to set an instance variable for an object. They are methods that name ends in an `=`, though by convention the instance variables name would prepend that `=`. So a setter for the instance variable `@name` would be called `name=`. Thanks to Ruby's syntactical sugar, we are able to call this method with a space like our other assignment methods.
 
 Setter methods always return the object that was passed to them, regardless of what you actually set the instance variable it is setting to. You can call a setter method inside an instance method using `self.` prepended to the method name. If you do not use `self.` in this case, Ruby will initialize a local variable instead.
 
@@ -66,7 +68,7 @@ class Person
     @name = name
   end
 
-  def name=(value)
+  def name=(value) # this is a setter method
     @name = value
   end
 
@@ -87,25 +89,99 @@ In our code we initialize the local variable `bob` and set it to a new instance 
 
 ### getters ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethods))
 
+Getters are accessor methods defined inside a class that are used to access the values stored within the instance variables associated with an object.
+
+```ruby
+class Person
+  def initilaize(name)
+    @name = name
+  end
+
+  def name # This is a getter method for @name
+    @name
+  end
+end
+
+sally = Person.new "Sally"
+puts sally.name # => Sally
+```
+In the code above, we define the `Person` class so that it will create objects that contain the instance variable `@name`. To access that instance variable outside of the class, we had to create a getter method `name` that returns the value associated with the instance variable `@name`. Without out, we could not know that the `Person` object referenced by the local variable `sally` had its instance variable `@name` set to `"Sally"`.
+
+We can also quickly define getters by calling the `attr_reader` or `attr_accessor` methods inside the class as both automatically create a getter by using the symbol passed to them as an argument.
 
 ## Use attr_* to create setter and getter methods
-### attr_reader []()
+### attr_reader ([docs](https://docs.ruby-lang.org/en/master/Module.html#method-i-attr_reader)) ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethods))
+`attr_reader` is used inside classes and module definitions to automatically create getter methods to instance variables you pass in as symbols.
 
+```ruby
+class Pencil
+  attr_reader :lead_color
+end
 
-### attr_writer []()
+# is the same as
+class Pencil
+  def lead_color
+    @lead_color
+  end
+end
+```
 
+In the code above, we define a `Pencil` class that calls the `attr_reader` method passing the symbol `:lead_color` as an argument inside the class definition. This causes Ruby to create the instance method `lead_color` that returns the object referred to by the instance variable `@lead_color`.
 
-### attr_accessor []()
+The second `Pencil` definition shows the manual way to define the `lead_color` method, which is functionally the same as the previous definition.
 
+### attr_writer ([Docs](https://docs.ruby-lang.org/en/master/Module.html#method-i-attr_writer)) ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethods))
+`attr_writer` is called inside class and module definitions to automatically create setter methods for instance variables you pass as symbols.
+
+```ruby
+class Pencil
+  attr_writer :lead_color
+end
+
+# is the same as
+class Pencil
+  def lead_color=(lead_color)
+    @lead_color = lead_color
+  end
+end
+```
+
+In the code above, we define a `Pencil` class that calls the `attr_writer` method passing the symbol `:lead_color` as an argument inside the class definition. This will create a `lead_color=` instance method to be used as a setter for `@lead_color` for an object of `Pencil` type.
+
+In the second `Pencil` definition, we do the same thing manually. Both class definitions are functionally the same.
+
+### attr_accessor ([Docs](https://docs.ruby-lang.org/en/master/Module.html#method-i-attr_accessor) )([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethods))
+`attr_accessor` is a method, that when called inside a class or module, will automatically create both getter and setter methods for instance variables you pass as symbols.
+
+```ruby
+class Pencil
+  attr_accessor :lead_color
+end
+
+# is the same as
+class Pencil
+  def lead_color=(lead_color)
+    @lead_color = lead_color
+  end
+
+  def lead_color
+    @lead_color
+  end
+end
+```
+
+In the code above, we define a `Pencil` class that calls the `attr_accessor` method passing the symbol `:lead_color` as an argument inside the class definition. This will create both the setter method `lead_color=`, but also the getter method `lead_color` that set/get the instance variable `@lead_color` for an object of `Pencil` type.
+
+The second `Pencil` definiton does the same thing, but manually. Both class definitions are functionally the same.
 
 ## Instance variables, class variables, and constants, including the scope of each type and how inheritance can affect that scope
-### Instance Variables []()
+### Instance Variables ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#instancevariables)) ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
 
-### Class Variables []()
+### Class Variables ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#classvariables)) ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
 
-### Constants []()
+### Constants ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#constants))([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
 
 

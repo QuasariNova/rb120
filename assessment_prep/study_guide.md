@@ -236,26 +236,60 @@ Constants are variables you never want to change and are defined by naming them 
 When it searches lexically, it will check the class or module that tried to reference it first, then it would go out of it by namespace searching for the constant until it hits the top level. This is kind of like Russian nesting dolls.
 
 ```Ruby
-WHERE = 'TOP'
-
-class Test
-  def self.test
-    puts WHERE
+module Greenable
+  def is_green
+    DECIDUOUS ? "Maybe" : "Yes"
   end
 end
 
-class Test2 < Test
-  WHERE = 'Test2'
+class Tree
+  DECIDUOUS = true
 
-  def self.test2
-    puts WHERE
+  include Greenable
+
+  def sheds_leaves?
+    DECIDUOUS
   end
 end
 
-Test.test  # 'Top'
-Test2.test # 'Top'
-Test2.test2 # 'Test2'
+module Evergreen
+  DECIDUOUS = false
+
+  class Spruce < Tree
+    def changes_color?
+      DECIDUOUS
+    end
+  end
+end
+
+blue_spruce = Evergreen::Spruce.new
 ```
+
+I have an example above to show how it works. We are going to call a few methods on the local variable `blue_spruce` and find out what is output to show how lexical scope works. First let's call `changes_color?` on it.
+
+```ruby
+p blue_spruce.changes_color? # => false
+```
+
+This method call returns `false`. This is because we first search lexically for a constant. Since the code to get the value of DECIDUOUS is inside the class `Spruce`, it first searchs the class `Spruce` and it finds no definition for the constant `DECIDUOUS`. It then goes the next level up, which is in this case the module `Evergreen`. `Evergreen` does define `DECIDUOUS`, so it returns that value, `false`. What if we use the `::` operator to check what `DECIDUOUS` is on the `Spruce` object?
+
+```ruby
+p blue_spruce.class::DECIDUOUS # => true
+```
+
+It returns `true`. Since we used the `::` operator, we are telling Ruby where to search, thus it doesn't search lexically at all. It instead looks at the inheritance chain trying to find the constant and that's it. So once it doesn't find `DECIDUOUS` inside `Spruce`, it searches its superclass `Tree` and finds it with the value `true`.
+
+```ruby
+p blue_spruce.sheds_leaves? # => true
+```
+
+When we call `sheds_leaves?` on the `Spruce` object we get `true`. This is because `sheds_leaves?` is inside the `Tree` class which is a superclass of `Spruce`. This is where Ruby will start its search for the constant `DECIDUOUS` because thats where in the code it is. `Tree` has a `DECIDUOUS` defined, so we return that value, true.
+
+```ruby
+p blue_spruce.is_green # => NameError
+```
+
+In the last case, we try to call `is_green` on the Spruce object. We try to retrieve the value of `DECIDUOUS` this time inside the `Greenable` module. It does not find it inside the module, so it needs to go a level up. The next level up is the top level, so it skips that. It then tries the inheritance chain, but will not find `DECIDUOUS`. Finally it tries the top level, which also does not initilaize `DECIDUOUS`, thus it can not find it and raises a `NameError`.
 
 ## Instance methods vs. class methods
 ### Instance methods []()

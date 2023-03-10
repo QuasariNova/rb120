@@ -177,13 +177,85 @@ The second `Pencil` definiton does the same thing, but manually. Both class defi
 ## Instance variables, class variables, and constants, including the scope of each type and how inheritance can affect that scope
 ### Instance Variables ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#instancevariables)) ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
+Instance variables are variables that have an `@` prepended to their name. It is a variable that only exists with the object it was initialized in. Each object of a type will have its own separate instance variables and they are what makes up the objects state. Instance variables are scoped to the object that they were initialized in and are manipulated by instance methods called on the object. Instance variables can be used even if they are not initialized, which in that case they will return nil.
+
+```ruby
+class Person
+  def initialize(name)
+    @name = name
+  end
+
+  def to_s
+    "My name is #{@name}"
+  end
+end
+
+test = Person.new("Bob")
+test2 = Person.new("Sally")
+puts test
+puts test2
+```
+
+In the above example we instantiate an object of type `Person` and assign it to a local variable named `test` by calling the class method `new` on it and passing the string `"Bob"` as an argument. `new` calls the constructor, which is the instance method `initialize` that has one parameter, which then assigns what was passed to the instance variable `@name`.
+
+We also override the `to_s` instance method in the `Person` class to take the instance variable `@name` and use string interpolation to add it to a message. We then see that message when we pass our `Person` object referred to by `test` to the `puts` method.
+
+We also do the same thing passing `"Sally"` and assigning the resulting object to the local variable `test2`. This shows that both `test` and `test2` are the same type, but have two different object references stored in their `@name` instance variable.
 
 ### Class Variables ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#classvariables)) ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
+Class variables are scoped at the class level and start with `@@`. It is specific to the class and not the object, but you can use both class methods and instance methods to manipulate class variables. You have to be careful because class variables are shared with all subclassess of a superclass and have to be initialized in order to use them. They are usually initialized in the class definition.
+
+```ruby
+class Person
+  @@people = 0
+
+  def intialize
+    @@people += 1
+  end
+
+  def self.people
+    @@people
+  end
+end
+
+puts Person.people # 0
+Person.new
+Person.new
+puts Person.people # 2
+```
+
+The above code shows how to intialize a class variable. In it, we intialize the class variable `@@people` inside the `Person` class and assign it to the integer `0`. On line 222, we call the `puts` method outputing the return value of the `people` class method from the `Person` class. The `people` class method returns the value stored in `@@people`. `puts` outputs `0` since it has just been defined.
+
+On lines 223 and 224, we inistantiate two instances of the `Person` class by calling the class method `new`. This will call the instance method `initialize`, which increments the class variable `@@people` by 1. Even though, these are two different objects, they both increase the same `@@people`. Which we see when we call `puts` on the return value of the class method `people` from the `Person` class. This time it outputs `2` showing that these two objects manipulated the same variable.
 
 ### Constants ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#constants))([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
+Constants are variables you never want to change and are defined by naming them starting with a capital letter, though Ruby style guildines suggest it is named with all capitals. Constants have lexical scope, which means that they first look for a constant by where it used in the code, then by inheritance, then finally looking at the top level.
 
+When it searches lexically, it will check the class or module that tried to reference it first, then it would go out of it by namespace searching for the constant until it hits the top level. This is kind of like Russian nesting dolls.
+
+```Ruby
+WHERE = 'TOP'
+
+class Test
+  def self.test
+    puts WHERE
+  end
+end
+
+class Test2 < Test
+  WHERE = 'Test2'
+
+  def self.test2
+    puts WHERE
+  end
+end
+
+Test.test  # 'Top'
+Test2.test # 'Top'
+Test2.test2 # 'Test2'
+```
 
 ## Instance methods vs. class methods
 ### Instance methods []()

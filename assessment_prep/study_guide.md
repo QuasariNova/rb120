@@ -292,16 +292,48 @@ p blue_spruce.is_green # => NameError
 In the last case, we try to call `is_green` on the Spruce object. We try to retrieve the value of `DECIDUOUS` this time inside the `Greenable` module. It does not find it inside the module, so it needs to go a level up. The next level up is the top level, so it skips that. It then tries the inheritance chain, but will not find `DECIDUOUS`. Finally it tries the top level, which also does not initilaize `DECIDUOUS`, thus it can not find it and raises a `NameError`.
 
 ## Instance methods vs. class methods
-### Instance methods []()
+### Instance methods [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#instancemethods)
 
+Instance methods are the behaviours of the objects created from the class that defines them. They are available to all instances of that class. They are able to access the instance variables of the object they are called on as they are part of the objects scope.
 
+```ruby
+class Person
+  def initialize(name)
+    @name = name
+  end
 
-### Class Methods []()
+  def greet
+    puts "Hi, I'm #{@name}"
+  end
+end
 
+bob = Person.new("Bob")
+sally = Person.new("Sally")
+bob.greet  # => Hi, I'm Bob
+sally.greet # => Hi, I'm Sally
+```
 
+As you can see above, we create two instances of the person class, each with a different name passed as an argument. This gives each instance it's own state. Once we call the instance method `greet` on both of them, we can see that we get different output despite calling the same method the same way. This is because instance methods can act on instance variables, which differ with different objects of the same type.
+
+### Class Methods [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#classmethods)
+
+Class methods are methods that are called directly on the class. They are different from instance methods in that they are called on the class and not on an instantiated object. They are defined by prepending `self.` to the method name or by prepending the class name to the method name like: `ClassName.method_name`. This is because `self` is shorthand for the class it resides in outside of class methods and instance methods.
+
+```ruby
+class Tree
+  def self.material
+    "Wood"
+  end
+end
+
+puts Tree.material # => Wood
+puts Tree.new.material # => NoMethodError
+```
+
+In the above example, we show that you can call the `material` class method on the `Tree` class itself, but we receive a `NoMethodError` calling it on an object of `Tree` type.
 
 ## Method Access Control
-### Method Access Control []()
+### Method Access Control [Book](https://launchschool.com/books/oo_ruby/read/inheritance#privateprotectedandpublic)
 
 
 ### public []()

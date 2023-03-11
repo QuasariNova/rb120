@@ -35,7 +35,7 @@ end
 apple = Apple.new
 orange = Orange.new
 
-# What does each line output and why?
+# What does each line below output and why?
 
 # p apple.compare(orange) # =>
 # p orange.compare(apple) # =>
@@ -70,7 +70,7 @@ end
 
 blue_spruce = Evergreen::Spruce.new
 
-# What does each line output and why?
+# What does each line below output and why?
 
 # p blue_spruce.changes_color? # =>
 # p blue_spruce.class::DECIDUOUS # =>

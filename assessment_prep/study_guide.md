@@ -389,6 +389,7 @@ In the above example, we show that you can call the `material` class method on t
 #### `#==`
 #### `#equal?`
 #### `#eql?`
+#### `#===`
 
 ## Working with collaborator objects []()
 

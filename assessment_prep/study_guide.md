@@ -229,7 +229,7 @@ The above code shows how to intialize a class variable. In it, we intialize the 
 
 On lines 223 and 224, we inistantiate two instances of the `Person` class by calling the class method `new`. This will call the instance method `initialize`, which increments the class variable `@@people` by 1. Even though, these are two different objects, they both increase the same `@@people`. Which we see when we call `puts` on the return value of the class method `people` from the `Person` class. This time it outputs `2` showing that these two objects manipulated the same variable.
 
-### Constants ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#constants))([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
+### Constants ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#constants)) ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/b4f9e5b7))
 
 Constants are variables you never want to change and are defined by naming them starting with a capital letter, though Ruby style guildines suggest it is named with all capitals. Constants have lexical scope, which means that they first look for a constant by where it used in the code, then by inheritance, then finally looking at the top level.
 
@@ -292,7 +292,7 @@ p blue_spruce.is_green # => NameError
 In the last case, we try to call `is_green` on the Spruce object. We try to retrieve the value of `DECIDUOUS` this time inside the `Greenable` module. It does not find it inside the module, so it needs to go a level up. The next level up is the top level, so it skips that. It then tries the inheritance chain, but will not find `DECIDUOUS`. Finally it tries the top level, which also does not initilaize `DECIDUOUS`, thus it can not find it and raises a `NameError`.
 
 ## Instance methods vs. class methods
-### Instance methods [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#instancemethods)
+### Instance methods ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#instancemethods))
 
 Instance methods are the behaviours of the objects created from the class that defines them. They are available to all instances of that class. They are able to access the instance variables of the object they are called on as they are part of the objects scope.
 
@@ -315,7 +315,7 @@ sally.greet # => Hi, I'm Sally
 
 As you can see above, we create two instances of the person class, each with a different name passed as an argument. This gives each instance it's own state. Once we call the instance method `greet` on both of them, we can see that we get different output despite calling the same method the same way. This is because instance methods can act on instance variables, which differ with different objects of the same type.
 
-### Class Methods [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#classmethods)
+### Class Methods ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#classmethods))
 
 Class methods are methods that are called directly on the class. They are different from instance methods in that they are called on the class and not on an instantiated object. They are defined by prepending `self.` to the method name or by prepending the class name to the method name like: `ClassName.method_name`. This is because `self` is shorthand for the class it resides in outside of class methods and instance methods.
 
@@ -333,50 +333,201 @@ puts Tree.new.material # => NoMethodError
 In the above example, we show that you can call the `material` class method on the `Tree` class itself, but we receive a `NoMethodError` calling it on an object of `Tree` type.
 
 ## Method Access Control
-### Method Access Control [Book](https://launchschool.com/books/oo_ruby/read/inheritance#privateprotectedandpublic)
+### Method Access Control ([Book](https://launchschool.com/books/oo_ruby/read/inheritance#privateprotectedandpublic))
 
+Method Access Control is one way to implement encapsulation. It is implemented through access modifiers that allow or restrict access to a particular thing. In Ruby, we typically restrict access to methods defined in a class through the use of `public`, `private`, and `protected` access modifiers.
 
-### public []()
+### public ([Book](https://launchschool.com/books/oo_ruby/read/inheritance#privateprotectedandpublic))
 
+Public methods are avaialable to anyone who knows either the class or object's name. Public methods make up the class's interface and it is how we interact with classes and objects outside the classes and objects.
 
-### private []()
+By default, every method in Ruby is public. If you need to explicitly define methods as public you may call the `public` method prior to defining the method, provided another access modifier wasn't used in between the `public` call and the method definition.
 
+### private ([Book](https://launchschool.com/books/oo_ruby/read/inheritance#privateprotectedandpublic))
 
-### protected []()
+Private methods are only available to the class or individual objects instantiated from the class that they are defined in. This hides these methods from the rest of the program. Typically, you would use private` methods to do implementation specific to the class or object, but giving the rest of the code access is unneccessary.
 
+You can declare methods private by calling the `private` method prior to defining the methods you wish to make private, provided you do not use another access modifier inbetween the `private` call and the method definition.
 
+### protected ([Book](https://launchschool.com/books/oo_ruby/read/inheritance#privateprotectedandpublic))
 
-## Referencing and setting instance variables vs. using getters and setters
-### Referencing and setting instance variables []()
+Protected methods are like private methods in that they do not allow the method to be called outside the class, but they allow different objects of the same type to access each others protected methods. They were created in cases where objects of the same type need to interact, like comparison, while keeping implementation hidden from the rest of the program.
 
+You can declare methods protected by calling the `protected` method prior to defining the methods you wish to make protected, provided you do not use another access modifier in between the `protected` call and the method definition.
 
-### Using Getters and Setters []()
+```ruby
+class GameConsole
+  def initialize(name, year)
+    @name = name
+    @year = year
+  end
 
+  def <=>(other)
+    year <=> other.year
+  end
 
+  def to_s
+    name
+  end
+
+  private
+
+  attr_reader :name
+
+  protected
+
+  attr_reader :year
+end
+
+nes = GameConsole.new "NES", 1983
+master_system = GameConsole.new "Master System", 1985
+
+p nes.to_s # => "NES"
+p nes.name # => NoMethodError
+p nes <=> master_system # => -1
+p master_system.year # => NoMethodError
+```
+
+The above example displays how method access control works. I define a `GameConsole` class with some public methods(`<=>` and `to_s`), a private method(`name`), and a `protected` method `year`.
+
+I then instantiate two instances of the `GameConsole` class, which I pass different data to as arguments for the constructor. One, I set to the newly initialized local variable `nes`, the other to the newly initialized local variable `master_system`.
+
+I then call `to_s` on the `nes` object. The `to_s` method then returns the return value of the private method `name`. The private `method` name is a getter for the instance variable `@name`, so it returns `"NES"`. We can call the `name` method because we are calling it inside the object.
+
+On the next line, I try to call the `name` method on the object referenced by `nes`. Because the `name` method is private, Ruby raises an error. This shows `private` methods can't be called outside the class.
+
+On the next line, I call the `<=>` method passing `master_system` as an argument. `<=>` compares the calling objects return value for the method call `year` to the object passed to it as an arguments return value for the method call `year`. `nes` year is smaller than `master_system`s year, so it returns `-1`. This is possible because `year` is a protected method and can be called inside objects of the same class as it.
+
+Finally, on the next line we try to call `year` on the `master_system` object again, but this time outside the class. Ruby raises another error, because you can not call protected methods outside the class.
+
+## Referencing and setting instance variables vs. using getters and setters ([Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#accessormethodsinaction))
+
+Inside instance methods you can either get/set your values directly from your instance variables by directly referencing their `@name`. You can also use accessor methods to do thesame thing.
+
+It is generally a good idea to call the getter or setter method instead of directly referencing the instance variable. By calling the accessor methods you are able to change the implementation of getting and setting the instance variable you are centralizing the relevant code and keeping your code DRY. You don't have to change every instance you reference your instance variable, because you only do that in the accessor methods.
+
+An example would be having to process the raw value before returning it. Maybe you store a credit card number in an object and you only ever want to display it with the last few digits of the card number. By implementing this in the getter method, no matter where you need it inside the class code, it will always return a value you expect. If you process the instance variables value manually, you might miss one time and inadvertently give out a full credit card number.
 
 ## Class inheritance, encapsulation, and polymorphism
-### Class Inheritance []()
+### Class Inheritance ([Book](https://launchschool.com/books/oo_ruby/read/inheritance#classinheritance)
+)
+Class inheritance is when a class inherits behavior from another class. We typically use class inheritance to extract common behaviors from classes that share that behavior and are conceptually related in a "is a" relationship.
+
+We use the `<` symbol to signify that a class is inheriting another class like so:
+
+```ruby
+class Animal
+  def speak
+    puts "Hello"
+  end
+end
+
+class Bird < Animal
+end
+```
+
+In the above, `Bird` inherits from `Animal`.
+
+We call the class being inherited the superclass and the class inheriting it the subclass. So in this case `Bird` is a subclass to the superclass `Animal`. Each class can only inherit one other class, but you can chain inheritance. Here is another class to add to the above:
+
+```ruby
+class Penguin < Bird
+end
+```
+
+In this case `Penguin` is a subclass to `Bird`, which itself was a subclass of `Penguin`.
+
+Objects of type `Penguin`, `Bird`, and `Animal` can all call the instance method `speak` defined in the `Animal` class:
+
+```ruby
+Penguin.new.speak # => Hello
+Bird.new.speak # => Hello
+Animal.new.speak # => Hello
+```
+
+### Interface Inheritance ([Book](https://launchschool.com/books/oo_ruby/read/inheritance#inheritancevsmodules)) ([Modules Book](https://launchschool.com/books/oo_ruby/read/the_object_model#modules))
+
+Interface inheritance doesn't involve classes inheriting each other, it instead allows a class to inherit just an interface. In Ruby, that involves mixin modules. While you can only inherit one class, you can mixin as many modules as you like.
+
+You can mixin a module by using the `include` method invocation:
+
+```ruby
+module Runable
+  def run
+    puts "Running"
+  end
+end
+
+class Child
+  include Runable
+end
+
+Child.new.run # => Running
+```
+
+In the above code we mixin the `Runable` module to the `Child` class and that gives child objects access to the `run` instance method. We could include as many modules as we need.
+
+Interface inheritance should be used when there is a "has-a" relationship. A `Bird` is-a `Animal`, a `Child` has-an ability to `run`. It is best to use to separate code that is common to disparite objects.
+
+### Object Oriented Programming ([Book](https://launchschool.com/books/oo_ruby/read/the_object_model#whyobjectorientedprogramming))
+
+Object Oriented Programming is a paradigm that was created to deal with problems created by procedural programming. In Procedural Programming, data flows from one method to another which creates a lot of complexity in larger scale systems, but also increases the dependencies across the program. This makes code very hard to maintain as applications grow in complexity and size. One small change, could have errors pop up throughout the code.
+
+Object oriented program treats programs as a collection of self-contained objects that handle their own data. It does this through encapsulation. This allows the data to only be manipulated when you have intention and defines the boundaries of each object. It is a form of data protection. Ruby does this by creating objects and exposing interfaces to interact with those objects.
+
+By being based around conceptual objects, this allows the programmer to think on a new level of abstraction.
+
+### Encapsulation ([Book](https://launchschool.com/books/oo_ruby/read/the_object_model#whyobjectorientedprogramming))
+
+Encapsulation is hiding functionality and only exposing the interface that you want interacted with. It is a form of data protection, so that data is manipulated with obvious intention.
+
+Ruby does this by creating objects and exposing interfaces to interact with said objects. Ruby uses Method Access Control to define the interface of each object.
+
+Objects open up a new level of abstraction, as they are typically based on real-world nouns and simulate real world behaviors.
+
+### Polymorphism ([Book](https://launchschool.com/books/oo_ruby/read/the_object_model#whyobjectorientedprogramming))
+
+Polymorphism is the ability for different types of data to respond to a common interface. It is the ability for different objects to invoke a method of the same name.
+
+A common example in Ruby is that integers, floats, strings, and arrays all respond to the `+` method:
+
+```ruby
+p 1 + 1 # => 2
+p 1.1 + 1.1 # => 2.2
+p 'Hi ' + 'there; # => 'Hi there'
+p [1, 2] + [3] # => [1, 2, 3]
+```
+
+All these object respond to the same interface.
+
+There are two ways that Ruby implements Polymorphism. The first is through inheritance. Both class inheritance and interface inheritance allow objects of different types to have the same behaviors(methods).
+
+The second is through Duck Typing. Duck Typing is where two objects of different unrelated types both respond to the same method name. We just care about whether they have a particular behavior.
+
+A good example is that you have multiple people working on restoring a house. You have a `InteriorDesigner` whose `work` is designing the interior, the `Builder` whose `work` is reinforcing the exterior, and the `Plumber` whose `work` is fixing the plumbing.
+
+All of their `work` is implemented differently, but it makes since that they would all call `work` the same in code. Since `work` is different for each, a inheritance does not make sense. We can only define them separately and call them similarly. In essence, they `work`(quack) like a `Worker`(Duck).
+
+## Method lookup path ([Book](https://launchschool.com/books/oo_ruby/read/the_object_model#methodlookup)) ([Book2](https://launchschool.com/books/oo_ruby/read/inheritance#methodlookup))
+
+The method lookup path is how Ruby tries to find method calls. Ruby will follow these steps, stopping once it finds it:
+
+1. Search the class of the caller
+2. Search the modules mixins for the class, starting with the last mixin.
+3. Go back to step 1, but this time with the current classes superclass
+4. Once there are no more superclasses, it will raise a `NoMethodError`
+
+Basically it looks through the inheritance chain until it finds the method, if it doesn't it raises a `NoMethodError`.
+
+You can use the `ancestors` method on any class to find out the method lookup path/inheritance chain for that class.
+
+## `self` [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#callingmethodswithself) ([Book 2](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#moreaboutself))
 
 
-### Encapsulation []()
+### Calling methods with `self` [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#callingmethodswithself)
 
 
-### Polymorphism []()
-
-
-## Modules []()
-
-
-## Method lookup path []()
-
-
-## `self` []()
-
-
-### Calling methods with `self` []()
-
-
-### More about `self` []()
+### More about `self` ([Book 2](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#moreaboutself))
 
 
 ## Reading OO code []()

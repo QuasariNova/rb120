@@ -523,26 +523,125 @@ You can use the `ancestors` method on any class to find out the method lookup pa
 
 ## `self` [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#callingmethodswithself) ([Book 2](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#moreaboutself))
 
-
 ### Calling methods with `self` [Book](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part1#callingmethodswithself)
 
+`self` is used inside instance methods as a standin for the calling object. It is commonly used to disambiguate setter methods from local variable initialization. While you can technically call any method from `self`, Ruby style guide suggests you do not use `self` when it is unneeded.
+
+```ruby
+class Something
+  attr_reader :data
+
+  def change_data(d)
+    self.data = d
+  end
+
+  def dont_change_data(d)
+    data = d
+  end
+
+  private
+
+  attr_writer :data
+end
+
+thing = Something.new
+p thing.data # => nil
+thing.dont_change_data 'data'
+p thing.data # => nil
+thing.change_data 'data'
+p thing.data # => 'data'
+```
+
+The above example shows that not calling the `data=` method prepended with `self` does not actually change the instance variable. The instance method `dont_change_data` actually initializes a local variable `data` instead of calling the `data=` method. `change_data` instead uses `self.data=` to make sure that Ruby knows to call the method.
 
 ### More about `self` ([Book 2](https://launchschool.com/books/oo_ruby/read/classes_and_objects_part2#moreaboutself))
 
+`self` inside of class methods is a stand in for the class that called the method. `self` inside instance methods is a stand in for the object that called the method. `self` outside of either is a stand in for the class that it resides in. We use `def self.method_name` to define class methods instead of `def ClassName.method_name` because of this.
 
-## Reading OO code []()
-
+`self` is a way of being explicit about our intentions of what we are referencing in code.
 
 ## Fake operators and equality
-### Fake operators []()
+### Fake operators ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/9a7db2ee))
 
-### Equality []()
+A large portion of 'operators' in Ruby are actually methods that look like operators because Ruby gives us special syntactical sugar when invoking certain methods a special way.
+
+| Method | Operator | Description |  |  |
+|:---:|:---:|:---:|---|---|
+| no |  ., ::  | Method/constant resolution operators |  |  |
+| yes |  [], []=  | Collection element getter and setter. |  |  |
+| yes | ** | Exponential operator |  |  |
+| yes |  !, ~, +, -  | Not, complement, unary plus and minus (method names for the last two are +@ and -@) |  |  |
+| yes |  *, /, %  | Multiply, divide, and modulo |  |  |
+| yes |  +, -  | Plus, minus |  |  |
+| yes |  >>, <<  | Right and left shift |  |  |
+| yes | & | Bitwise "and" |  |  |
+| yes |  ^, \|  | Bitwise exclusive "or" and regular "or" (inclusive "or") |  |  |
+| yes |  <=, <, >, >=  | Less than/equal to, less than, greater than, greater than/equal to |  |  |
+| yes |  <=>, ==, ===, !=, =~, !~  | Equality and pattern matching (!~ cannot be directly defined) |  |  |
+| no | && | Logical "and" |  |  |
+| no | \|\| | Logical "or" |  |  |
+| no |  .., ...  | Inclusive range, exclusive range |  |  |
+| no | ? : | Ternary if-then-else |  |  |
+| no |  =, %=, /=, -=, +=, \|=, &=, >>=, <<=, *=, &&=, \|\|=, **=, {  | Assignment (and shortcuts) and block delimiter |  |  |
+
+### Equality ([Lesson 3](https://launchschool.com/lessons/d2f05460/assignments/9cadd494))
 #### `#==`
+
+- Intended to compare two variables are equal. For most objects it does.
+- `==` is a method not an operator
+- By default, `BasicObject#==` only checks if the two objects are the same. The same as `equal?`
+
 #### `#equal?`
+- `equal?` checks if two objects are the same object. Basically compares `object_id` calls.
+- Not used often.
+
 #### `#eql?`
+
+- Used implicitly by `Hash`.
+- Rarely used outside of `Hash`.
+- Checks if two objects are of the same class and contain the same value.
+
 #### `#===`
+- Used implicitly by `case`
+- is a method, not an operator
+- Is used to check if an object is part of a group. So is it a specific class? Is it within a range? Is it this specific value?
+- group === object
+- The object that makes up the 'group' defines the `===` method.
+- `Object#===` just calls `==` by default.
+- Rarely used outside of `case` statements.
 
-## Working with collaborator objects []()
+## Working with collaborator objects [Lesson 2](https://launchschool.com/lessons/dfff5f6b/assignments/4228f149)
 
+Collaborater objects are objects that are part of another object's state. They work in collaboration with the class that they are associated with. Any object can be a colloborator object. Collaborator objects allows you to section up problem domain into modular pieces that come together to solve complicated problems.
 
-## Create a code spike []()
+```ruby
+class Horn
+  def squeeze
+    puts "HONK!"
+  end
+end
+
+class Person
+  def initialize
+    @horn = Horn.new
+  end
+
+  def honk_horn
+    @horn.squeeze
+  end
+end
+
+Person.new.honk_horn
+```
+
+In the above example, the `Horn` object stored within the instance variable `@horn` inside the `Person` object is a collaborator object for the `Person` object. The `Person` object can then `squeeze` the `@horn` when he wants to `honk_horn`.
+
+## Create a code spike ([TicTacToe](https://launchschool.com/lessons/97babc46/assignments/7dcb53f1)) ([21](https://launchschool.com/lessons/97babc46/assignments/819bf113)) ([RPS](https://launchschool.com/lessons/dfff5f6b/assignments/180e267e))
+
+1. Write a description of the problem
+2. Extract major nouns and verbs.
+3. Organize Verbs to Nouns
+4. Nouns are classes, Verbs are methods
+5. Make stub classes and methods from the above
+
+A spike is experimental code that is based on the description of the problem. It is a skeleton you can work off while you better understand the problem.

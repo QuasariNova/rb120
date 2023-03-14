@@ -199,3 +199,51 @@ end
 # All dentists graduated from dental school.
 # Oral surgeons place implants.
 # General dentists fill teeth
+
+# Nouns:
+# Dental Office, Oral Surgeon, Orthodontist, General Dentist, Dentist, Dental School
+
+# Verbs
+# Pull Teeth, Straighten Teeth, Place Implants, Fill Teeth
+
+class Dentist
+  def initialize
+    @graduated_from = 'Dental School'
+  end
+end
+
+module TeethPullable
+  def pull_teeth
+    "This might take the pliers"
+  end
+end
+
+class GeneralDentist < Dentist
+  include TeethPullable
+
+  def fill_teeth
+    "Here's your filling"
+  end
+end
+
+class OralSurgeon < Dentist
+  include TeethPullable
+
+  def place_implants
+    "Placing"
+  end
+end
+
+class Orthodontist < Dentist
+  def straighten_teeth
+    "You have a much nicer smile now"
+  end
+end
+
+class DentalOffice
+  def initialize
+    @name = 'Dental People Inc.'
+    @dentists = [OralSurgeon.new, OralSurgeon.new, Orthodontist.new,
+                 Orthodontist.new, GeneralDentist.new]
+  end
+end
